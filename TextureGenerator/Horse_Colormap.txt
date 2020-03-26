@@ -1,0 +1,22 @@
+Body
+0c00ff
+
+
+Tail
+ea00ff
+
+
+Legs
+ff0000
+
+
+Hooves
+00fffc
+
+
+Head
+fff600
+
+
+Thing in the lower left
+ff9c00
