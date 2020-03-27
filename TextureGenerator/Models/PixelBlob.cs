@@ -8,6 +8,10 @@ namespace TextureGenerator.Models
 {
 	public class PixelBlob
 	{
+		public PixelBlob()
+		{
+			this.Pixels = new List<Pixel>();
+		}
 		public PixelColor BlobColor { get; set; }
 		public List<Pixel> Pixels { get; set; }
 		public List<Pixel> Border 

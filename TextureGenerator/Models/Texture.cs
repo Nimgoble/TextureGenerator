@@ -8,6 +8,23 @@ using System.Windows.Media;
 using TextureGenerator.Framework;
 namespace TextureGenerator.Models
 {
+	public class PixelProcessingContainer
+	{
+		public Pixel Pixel { get; set; }
+		private PixelBlob blob = null;
+		public PixelBlob Blob 
+		{ 
+			get
+			{
+				if (this.blob != null)
+					return this.blob;
+				if (this.Pixel == null)
+					return null;
+				this.blob = 
+			}
+			set; 
+		}
+	}
 	public class Texture
 	{
 		private BitmapSource source;
@@ -28,8 +45,8 @@ namespace TextureGenerator.Models
 			BitmapSource source = this.source;
 			ourTaskContext.UpdateMessage("Starting processing of image");
 			//var pixelColors = source.CopyPixels();
-			var pixels2D = new Pixel[pixelColors.GetLength(0),pixelColors.GetLength(1)];
-			var pixels = new List<Pixel>();
+			var pixels2D = new PixelProcessingContainer[pixelColors.GetLength(0),pixelColors.GetLength(1)];
+			var pixels = new List<PixelProcessingContainer>();
 			await dialogContext.AddTask
 			(
 				(taskContext) =>
@@ -45,18 +62,21 @@ namespace TextureGenerator.Models
 							var currentIndex = (y * yLength) + x;
 							//taskContext.UpdateMessage($"Converting pixel {currentIndex} out of {total}");
 							var pixelColor = pixelColors[y, x];
-							var pixel = new Pixel
+							var pixelContainer = new PixelProcessingContainer()
 							{
-								PixelColor = pixelColor,
-								Position = new System.Windows.Point(x, y)
+								Pixel = new Pixel
+								{
+									PixelColor = pixelColor,
+									Position = new System.Windows.Point(x, y)
+								}
 							};
-							pixels2D[y, x] = pixel;
+							pixels2D[y, x] = pixelContainer;
 							if (this.transparencyColor.IsEqualToPixelColor(pixelColor))
 							{
 								//taskContext.UpdateProgress(currentIndex / total);
 								continue;
 							}
-							pixels.Add(pixel);
+							pixels.Add(pixelContainer);
 							//taskContext.UpdateProgress(currentIndex / total);
 						}
 					}
@@ -74,22 +94,37 @@ namespace TextureGenerator.Models
 					taskContext.UpdateMessage($"Assigning siblings for {pixels.Count} pixels.");
 					pixels.ForEach
 					(
-						pixel =>
+						pixelContainer =>
 						{
+							var pixel = pixelContainer.Pixel;
 							++index;
 							if (this.transparencyColor.IsEqualToPixelColor(pixel.PixelColor))
 								return;
 
+							PixelBlob blob = null;
 							foreach (var siblingDirection in Enum.GetValues(typeof(SiblingDirection)).Cast<SiblingDirection>())
 							{
 								var siblingPoint = pixel.Position.ToDirection(siblingDirection);
 								if (!pixels2D.IsWithinBounds(siblingPoint))
 									continue;
-								var potentialSiblingPixel = pixels2D[(int)siblingPoint.Y, (int)siblingPoint.X];
-								var siblingPixel = (potentialSiblingPixel.PixelColor.IsEqualTo(pixel.PixelColor)) ? potentialSiblingPixel : null;
+								var siblingPixelContainer = pixels2D[(int)siblingPoint.Y, (int)siblingPoint.X];
+								var siblingPixel = siblingPixelContainer.Pixel;
+								if (!(siblingPixel.PixelColor.IsEqualTo(pixel.PixelColor)))
+									continue;
+								if (siblingPixelContainer.Blob != null && blob == null)
+									blob = siblingPixelContainer.Blob;
 
 								pixel.SetSibling(siblingPixel, siblingDirection);
 							}
+							if (blob == null)
+							{
+								blob = new PixelBlob();
+								blob.BlobColor = pixel.PixelColor;
+								this.Blobs.Add(blob);
+							}
+
+							blob.Pixels.Add(pixelContainer.Pixel);
+							pixelContainer.Blob = blob;
 							taskContext.UpdateProgress((int)((index / pixels.Count) * 100));
 						}
 					);
@@ -97,7 +132,8 @@ namespace TextureGenerator.Models
 				}
 			);
 
-			var pixelGroups = pixels.GroupBy(pixel => pixel.PixelColor);
+			//var pixelGroups = pixels.GroupBy(pixel => pixel.PixelColor);
+			var pixelGroups = this.blobs.GroupBy(x => x.BlobColor);
 
 			var tasks = new List<Task>();
 			var modifiedPixelGroups = new List<List<PixelBlob>>();
@@ -110,19 +146,26 @@ namespace TextureGenerator.Models
 					(
 						(taskContext) => 
 						{
-							var result = this.ProcessPixelGroup(pixelGroup, taskContext);
-							lock(mutex)
-							{
-								modifiedPixelGroups.Add(result);
-							}
+							this.PrintBlobsForColor(pixelGroup, taskContext);
+							//var result = this.ProcessPixelGroup(pixelGroup, taskContext);
+							//lock(mutex)
+							//{
+							//	modifiedPixelGroups.Add(result);
+							//}
 						}
 					)
 				);
 			}
 			Task.WaitAll(tasks.ToArray());
 			ourTaskContext.UpdateProgress(100);
-			this.blobs.AddRange(modifiedPixelGroups.SelectMany(x => x));
+			//this.blobs.AddRange(modifiedPixelGroups.SelectMany(x => x));
 			return true;
+		}
+		private void PrintBlobsForColor(IGrouping<PixelColor, PixelBlob> colorBlobsGroup, ITaskContext taskContext)
+		{
+			var keyDisplayName = colorBlobsGroup.Key.ToColor().ToHexString();
+			taskContext.UpdateMessage($"{keyDisplayName}: {colorBlobsGroup.Count()} blobs.");
+			taskContext.UpdateProgress(100);
 		}
 		private List<PixelBlob> ProcessPixelGroup(IGrouping<PixelColor, Pixel> pixelGroup, ITaskContext taskContext)
 		{
@@ -155,11 +198,11 @@ namespace TextureGenerator.Models
 					//var blobPixels = (existingBlob != null) ? existingBlob.Pixels : new List<Pixel>();
 					var blobPixels = new List<Pixel>();
 					var currentList = new List<Pixel>();
+					var siblingTransferList = new List<Pixel>();
 					currentList.Add(nextPixel);
 					do
 					{
 						blobPixels.AddRange(currentList);
-						var tempList = new List<Pixel>();
 						currentList.ForEach
 						(
 							x =>
@@ -167,15 +210,15 @@ namespace TextureGenerator.Models
 								pixelGroupList.Remove(x);
 								foreach(var sibling in x.Siblings)
 								{
-									if (sibling == null || blobPixels.Contains(sibling) || tempList.Contains(sibling))
+									if (sibling == null || blobPixels.Contains(sibling) || siblingTransferList.Contains(sibling))
 										continue;
-									tempList.Add(sibling);
+									siblingTransferList.Add(sibling);
 								}
 							}
 						);
 						currentList.Clear();
-						currentList.AddRange(tempList);
-						//currentList = currentList.SelectMany(x => x.Siblings.Where(y => y != null && !blobPixels.Contains(y))).ToList();
+						currentList.AddRange(siblingTransferList);
+						siblingTransferList.Clear();
 						updatePercentage();
 					}
 					while (currentList.Any());
