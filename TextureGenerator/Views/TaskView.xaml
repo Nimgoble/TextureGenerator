@@ -11,7 +11,7 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<ProgressBar Grid.Row="0" Height="50" Margin="10" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Value="{Binding Percentage}" />
-		<TextBlock Grid.Row="1" FontSize="32" HorizontalAlignment="Left" Text="{Binding Message}" />
+		<ProgressBar Grid.Row="0" Height="50" Margin="10" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Value="{Binding Percentage}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" />
+		<TextBlock Grid.Row="1" FontSize="32" Text="{Binding Message}" HorizontalAlignment="Stretch" />
 	</Grid>
 </UserControl>

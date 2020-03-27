@@ -15,7 +15,7 @@
 		<ListView Grid.Row="0" ItemsSource="{Binding Tasks}" ScrollViewer.VerticalScrollBarVisibility="Auto">
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<views:TaskView DataContext="{Binding}" HorizontalAlignment="Stretch"/>
+					<views:TaskView DataContext="{Binding}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
 				</DataTemplate>
 			</ListView.ItemTemplate>
 		</ListView>
