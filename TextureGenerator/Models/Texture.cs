@@ -132,13 +132,6 @@ namespace TextureGenerator.Models
 			try
 			{
 				double originalCount = (double)pixelGroupList.Count;
-				//if (originalCount > 20000)
-				//{
-				//	taskContext.UpdateMessage($"{keyDisplayName}: Skipping because there are too many pixels: {pixelGroupList.Count}");
-				//	taskContext.UpdateProgress(100);
-				//	return groupBlobs;//Speed shit up.
-				//}
-
 				Func<int> calculatePercentage = () => { return Math.Min((int)(100 - (((double)pixelGroupList.Count / originalCount) * 100)), 99); };
 				int percentageDone = 0;
 				Action updatePercentage = () =>
@@ -151,15 +144,13 @@ namespace TextureGenerator.Models
 				{
 					updatePercentage();
 					var nextPixel = pixelGroupList.First();
-					//var existingBlob = groupBlobs.FirstOrDefault(eb => nextPixel.Siblings.Where(sibling => sibling != null).Any(sibling => eb.Pixels.Contains(sibling)));
-					//var blobPixels = (existingBlob != null) ? existingBlob.Pixels : new List<Pixel>();
 					var blobPixels = new List<Pixel>();
 					var currentList = new List<Pixel>();
 					currentList.Add(nextPixel);
+					var siblingTransferList = new List<Pixel>();
 					do
 					{
 						blobPixels.AddRange(currentList);
-						var tempList = new List<Pixel>();
 						currentList.ForEach
 						(
 							x =>
@@ -167,45 +158,26 @@ namespace TextureGenerator.Models
 								pixelGroupList.Remove(x);
 								foreach(var sibling in x.Siblings)
 								{
-									if (sibling == null || blobPixels.Contains(sibling) || tempList.Contains(sibling))
+									if (sibling == null || blobPixels.Contains(sibling) || siblingTransferList.Contains(sibling))
 										continue;
-									tempList.Add(sibling);
+									siblingTransferList.Add(sibling);
 								}
 							}
 						);
 						currentList.Clear();
-						currentList.AddRange(tempList);
-						//currentList = currentList.SelectMany(x => x.Siblings.Where(y => y != null && !blobPixels.Contains(y))).ToList();
+						currentList.AddRange(siblingTransferList);
+						siblingTransferList.Clear();
 						updatePercentage();
 					}
 					while (currentList.Any());
-					//if (existingBlob == null)
-					//{
-						var blob = new PixelBlob()
-						{
-							BlobColor = pixelGroup.Key,
-							Pixels = blobPixels
-						};
-						groupBlobs.Add(blob);
-					//}
+					var blob = new PixelBlob()
+					{
+						BlobColor = pixelGroup.Key,
+						Pixels = blobPixels
+					};
+					groupBlobs.Add(blob);
 					pixelGroupList = pixelGroupList.Where(pixel => !blobPixels.Contains(pixel)).ToList();
 				}
-
-				//var current = groupBlobs.FirstOrDefault();
-				//PixelBlob nextOverlap = null;
-				//do
-				//{
-				//	taskContext.UpdateMessage($"{keyDisplayName}: Grouping blobs. {groupBlobs.Count}");
-				//	nextOverlap = groupBlobs.FirstOrDefault(blob => blob != current && current.DoesOverlap(blob));
-				//	if (nextOverlap != null)
-				//	{
-				//		current.Pixels.AddRange(nextOverlap.Pixels.Where(p => !current.Pixels.Contains(p)));
-				//		groupBlobs.Remove(nextOverlap);
-				//	}
-				//	else
-				//		current = (current == groupBlobs.Last()) ? null : groupBlobs.ElementAt(groupBlobs.IndexOf(current) + 1);
-				//}
-				//while (current != null);
 				taskContext.UpdateMessage($"{keyDisplayName}: {groupBlobs.Count} blobs.");
 				taskContext.UpdateProgress(100);
 			}
