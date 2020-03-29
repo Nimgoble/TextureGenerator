@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-
+using Newtonsoft.Json;
 namespace TextureGenerator.Models
 {
 	public enum SiblingDirection
@@ -19,6 +19,7 @@ namespace TextureGenerator.Models
 		DownLeft = 6,
 		UpLeft = 7
 	}
+	[JsonObject(MemberSerialization.OptIn)]
 	public class Pixel
 	{
 		private Pixel[] siblings = new Pixel[8];
@@ -29,6 +30,7 @@ namespace TextureGenerator.Models
 				this.siblings[(int)siblingDirection] = null;
 			}
 		}
+		[JsonProperty]
 		public Point Position { get; set; }
 		public PixelColor PixelColor { get; set; }
 		public Pixel[] Siblings { get { return siblings; } }

@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Caliburn.Micro;
+using Newtonsoft.Json;
 
 using TextureGenerator.Framework;
 using TextureGenerator.Models;
@@ -150,12 +151,22 @@ namespace TextureGenerator.ViewModels
 		{
 			if (this.selectedColor == null || this.dialogViewModel != null)
 				return;
-			var texture = new Texture(this.sourceImage, this.selectedColor);
+			var textureProcessor = new TextureProcessor();
 			this.dialogViewModel = new DialogViewModel();
 			var pixelColors = this.sourceImage.CopyPixels();
-			this.dialogViewModel.AddTask(async (taskContext) => await texture.ProcessSource(pixelColors, this.dialogViewModel, taskContext));
+			Texture texture = null;
+			this.dialogViewModel.AddTask
+			(
+				async (taskContext) =>
+				{
+					texture = await textureProcessor.ProcessSourceAsync(this.sourceImage, pixelColors, this.selectedColor, this.dialogViewModel, taskContext);
+				}
+			);
 			this.windowManager.ShowDialog(this.dialogViewModel);
 			this.dialogViewModel = null;
+			this.Texture = texture;
+			if (this.Texture == null)
+				return;
 			DrawingVisual dv = new DrawingVisual();
 			var src = this.outputImage;
 			using (DrawingContext dc = dv.RenderOpen())
@@ -175,6 +186,34 @@ namespace TextureGenerator.ViewModels
 			RenderTargetBitmap rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);
 			rtb.Render(dv);
 			this.CopyToOutputImage(rtb);
+		}
+		public void WriteTextureProfile(string outputFile)
+		{
+			if (!this.CanWriteTextureProfile)
+				return;
+
+			var outputObject = new
+			{
+				Blobs =
+					from blob
+					in this.texture.Blobs
+					select new
+					{
+						BlobColor = blob.BlobColor,
+						Pixels =
+							from pixel
+							in blob.Pixels
+							select new
+							{
+								Position = pixel.Position
+							}
+					}
+			};
+			File.WriteAllText(outputFile, JsonConvert.SerializeObject(outputObject));
+		}
+		public bool CanWriteTextureProfile
+		{
+			get { return this.Texture != null; }
 		}
 		private void CopyToOutputImage(BitmapSource source)
 		{
@@ -290,6 +329,17 @@ namespace TextureGenerator.ViewModels
 			{
 				this.transparencyColor = value;
 				NotifyOfPropertyChange(() => TransparencyColor);
+			}
+		}
+		private Texture texture = null;
+		public Texture Texture 
+		{ 
+			get { return texture; } 
+			private set
+			{
+				this.texture = value;
+				NotifyOfPropertyChange(() => Texture);
+				NotifyOfPropertyChange(() => CanWriteTextureProfile);
 			}
 		}
 		public bool? DoReplacementAdditive { get; set; }
