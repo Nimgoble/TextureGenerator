@@ -154,17 +154,105 @@ namespace TextureGenerator.ViewModels
 			var textureProcessor = new TextureProcessor();
 			this.dialogViewModel = new DialogViewModel();
 			var pixelColors = this.sourceImage.CopyPixels();
-			Texture texture = null;
+			TextureProfile textureProfile = null;
 			this.dialogViewModel.AddTask
 			(
 				async (taskContext) =>
 				{
-					texture = await textureProcessor.ProcessSourceAsync(this.sourceImage, pixelColors, this.selectedColor, this.dialogViewModel, taskContext);
+					textureProfile = await textureProcessor.GenerateTextureProfileAsync(pixelColors, this.selectedColor, this.dialogViewModel, taskContext);
 				}
 			);
 			this.windowManager.ShowDialog(this.dialogViewModel);
 			this.dialogViewModel = null;
-			this.Texture = texture;
+			this.Texture = new Texture(this.sourceImage, textureProfile);
+			this.DrawTextureOnOutput();
+		}
+		public void WriteTextureProfile(string outputFile)
+		{
+			if (!this.CanWriteTextureProfile || this.dialogViewModel != null)
+				return;
+
+			//var outputObject = new
+			//{
+			//	Blobs =
+			//		from blob
+			//		in this.texture.Blobs
+			//		select new
+			//		{
+			//			BlobColor = blob.BlobColor,
+			//			Pixels =
+			//				from pixel
+			//				in blob.Pixels
+			//				select new
+			//				{
+			//					Position = pixel.Position
+			//				}
+			//		}
+			//};
+			this.dialogViewModel = new DialogViewModel();
+			this.dialogViewModel.AddTask
+			(
+				async (taskContext) =>
+				{
+					try
+					{
+						File.WriteAllText(outputFile, JsonConvert.SerializeObject(this.texture.GetTextureProfile()));
+					}
+					catch (Exception ex)
+					{
+						taskContext.UpdateMessage($"Error writing texture profile: {ex.Message}");
+					}
+					taskContext.UpdateProgress(100);
+				}
+			);
+			this.windowManager.ShowDialog(this.dialogViewModel);
+			this.dialogViewModel = null;
+			
+		}
+		public bool CanWriteTextureProfile
+		{
+			get { return this.Texture != null; }
+		}
+		public void TestDeserializeOutput(string fileName)
+		{
+			if (this.dialogViewModel != null || this.sourceImage == null)
+				return;
+
+			TextureProfile textureProfile = null;
+			var pixelColors = this.sourceImage.CopyPixels();
+			var pixelsSource = PixelsSource.FromPixelColors(pixelColors);
+			this.dialogViewModel = new DialogViewModel();
+			this.dialogViewModel.AddTask
+			(
+				async (taskContext) =>
+				{
+					try
+					{
+						taskContext.UpdateMessage("Trying to load file.");
+						textureProfile = JsonConvert.DeserializeObject<TextureProfile>(File.ReadAllText(fileName));
+						textureProfile.Blobs.ForEach
+						(
+							blob =>
+							{
+								blob.PixelsSource = pixelsSource;
+								//blob.Pixels.ForEach(pixel => pixel.PixelColor = blob.BlobColor); //Doing this cut the file size down to 1/5 of the size.
+							}
+						);
+					}
+					catch(Exception ex)
+					{
+						taskContext.UpdateMessage($"Error loading file: {ex.Message}");
+					}
+					taskContext.UpdateProgress(100);
+				}
+			);
+			this.windowManager.ShowDialog(this.dialogViewModel);
+			this.dialogViewModel = null;
+			this.Texture = new Texture(this.sourceImage, textureProfile);
+			this.DrawTextureOnOutput();
+		}
+		private void DrawTextureOnOutput()
+		{
 			if (this.Texture == null)
 				return;
 			DrawingVisual dv = new DrawingVisual();
@@ -186,34 +274,6 @@ namespace TextureGenerator.ViewModels
 			RenderTargetBitmap rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);
 			rtb.Render(dv);
 			this.CopyToOutputImage(rtb);
-		}
-		public void WriteTextureProfile(string outputFile)
-		{
-			if (!this.CanWriteTextureProfile)
-				return;
-
-			var outputObject = new
-			{
-				Blobs =
-					from blob
-					in this.texture.Blobs
-					select new
-					{
-						BlobColor = blob.BlobColor,
-						Pixels =
-							from pixel
-							in blob.Pixels
-							select new
-							{
-								Position = pixel.Position
-							}
-					}
-			};
-			File.WriteAllText(outputFile, JsonConvert.SerializeObject(outputObject));
-		}
-		public bool CanWriteTextureProfile
-		{
-			get { return this.Texture != null; }
 		}
 		private void CopyToOutputImage(BitmapSource source)
 		{

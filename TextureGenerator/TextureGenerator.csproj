@@ -80,6 +80,9 @@
     <Compile Include="Framework\ColorToBrushConverter.cs" />
     <Compile Include="Framework\ITaskContext.cs" />
     <Compile Include="Framework\TextureProcessor.cs" />
+    <Compile Include="Models\IPixelsSource.cs" />
+    <Compile Include="Models\PixelsSource.cs" />
+    <Compile Include="Models\TextureProfile.cs" />
     <Compile Include="ViewModels\DialogViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="Views\DialogView.xaml.cs">

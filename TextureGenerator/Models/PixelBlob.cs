@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace TextureGenerator.Models
 {
 	public class PixelBlob
 	{
+		private IPixelsSource pixelsSource;
+		public PixelBlob(IPixelsSource pixelsSource)
+		{
+			this.pixelsSource = pixelsSource;
+		}
 		public PixelColor BlobColor { get; set; }
 		public List<Pixel> Pixels { get; set; }
+		[JsonIgnore]
 		public List<Pixel> Border 
 		{ 
 			get
@@ -17,16 +24,25 @@ namespace TextureGenerator.Models
 				return this.Pixels.Where
 				(
 					pixel =>
-					pixel.GetSibling(SiblingDirection.Up) == null ||
-					pixel.GetSibling(SiblingDirection.Down) == null ||
-					pixel.GetSibling(SiblingDirection.Left) == null ||
-					pixel.GetSibling(SiblingDirection.Right) == null
+					this.pixelsSource.GetSibling(pixel, SiblingDirection.Up, true) == null ||
+					this.pixelsSource.GetSibling(pixel, SiblingDirection.Right, true) == null ||
+					this.pixelsSource.GetSibling(pixel, SiblingDirection.Down, true) == null ||
+					this.pixelsSource.GetSibling(pixel, SiblingDirection.Left, true) == null
 				).ToList();
 			} 
 		}
 		public bool DoesOverlap(PixelBlob other)
 		{
-			return other.Pixels.Any(otherPixel => this.Pixels.Contains(otherPixel) || this.Pixels.Any(pixel => otherPixel.IsSibling(pixel)));
+			return other.Pixels.Any(otherPixel => this.Pixels.Contains(otherPixel) || this.Pixels.Any(pixel => this.pixelsSource.AreSiblings(pixel, otherPixel, true)));
+		}
+		[JsonIgnore]
+		public IPixelsSource PixelsSource 
+		{ 
+			get { return this.pixelsSource; } 
+			set
+			{
+				this.pixelsSource = value;
+			}
 		}
 	}
 }

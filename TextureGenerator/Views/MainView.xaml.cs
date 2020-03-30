@@ -49,7 +49,6 @@ namespace TextureGenerator.Views
 				catch (Exception ex)
 				{
 				}
-
 			}
 		}
 		private void iSourceImage_MouseDown(object sender, MouseButtonEventArgs e)
@@ -91,6 +90,28 @@ namespace TextureGenerator.Views
 			{
 				var fileName = dialog.FileName;
 				this.ViewModel?.WriteTextureProfile(fileName);
+			}
+		}
+
+		private void bTestDeserializeOutput_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new OpenFileDialog();
+			dialog.Filter = "JSON file (*.json) | *.json";
+			dialog.InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+			if (dialog.ShowDialog() == true)
+			{
+				try
+				{
+					var vm = this.ViewModel;
+					if (vm != null)
+					{
+						vm.TestDeserializeOutput(dialog.FileName);
+					}
+				}
+				catch (Exception ex)
+				{
+				}
+
 			}
 		}
 	}
