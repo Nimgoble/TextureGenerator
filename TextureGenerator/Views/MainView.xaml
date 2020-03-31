@@ -72,6 +72,9 @@
 
 				</Grid>
 			</TabItem>
+			<TabItem Header="Model Viewer">
+				<local:ModelViewerView DataContext="{Binding ModelViewerViewModel}"/>
+			</TabItem>
 		</TabControl>
 
 		<StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right">

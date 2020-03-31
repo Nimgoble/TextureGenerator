@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Caliburn.Micro;
 using Newtonsoft.Json;
+using HelixToolkit.Wpf.SharpDX;
 
 using TextureGenerator.Framework;
 using TextureGenerator.Models;
@@ -19,9 +20,12 @@ namespace TextureGenerator.ViewModels
 	{
 		private IWindowManager windowManager;
 		private DialogViewModel dialogViewModel;
-		public MainViewModel(IWindowManager windowManager)
+		private readonly IEffectsManager effectsManager;
+		public MainViewModel(IWindowManager windowManager, IEffectsManager effectsManager)
 		{
 			this.windowManager = windowManager;
+			this.effectsManager = effectsManager;
+			this.modelViewerViewModel = new ModelViewerViewModel(windowManager, effectsManager);
 			this.UseTolerance = false;
 			this.DoReplacementAdditive = true;
 		}
@@ -59,6 +63,7 @@ namespace TextureGenerator.ViewModels
 				}
 			}
 			this.outputImage.PutPixels(outputPixels, 0, 0);
+			this.UpdateModelMaterial();
 		}
 		public void SaveOutput(string fileName)
 		{
@@ -302,6 +307,16 @@ namespace TextureGenerator.ViewModels
 			  data, stride, 0);
 
 			this.OutputImage = target;
+			this.UpdateModelMaterial();
+		}
+		private void UpdateModelMaterial()
+		{
+			var targetMemoryStream = this.OutputImage.ToMemoryStream();
+			this.modelViewerViewModel.TestMaterial = new PhongMaterial()
+			{
+				DiffuseMap = targetMemoryStream,
+				EmissiveMap = targetMemoryStream
+			};
 		}
 		private void DrawingAlgorithmOne(DrawingContext dc, BitmapSource src)
 		{
@@ -405,6 +420,8 @@ namespace TextureGenerator.ViewModels
 		public bool? DoReplacementAdditive { get; set; }
 		public bool? UseTolerance { get; set; }
 		public string Tolerance { get; set; }
+		private ModelViewerViewModel modelViewerViewModel = null;
+		public ModelViewerViewModel ModelViewerViewModel { get { return this.modelViewerViewModel; } }
 		#endregion
 	}
 }

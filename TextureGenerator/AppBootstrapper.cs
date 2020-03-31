@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Caliburn.Micro;
 using TextureGenerator.ViewModels;
-
+using HelixToolkit.Wpf.SharpDX;
 namespace TextureGenerator
 {
     public class AppBootstrapper : BootstrapperBase
@@ -18,11 +18,17 @@ namespace TextureGenerator
             Initialize();
         }
 
+        protected override void OnExit(object sender, EventArgs e)
+        {
+            container.GetInstance<IEffectsManager>().Dispose();
+            base.OnExit(sender, e);
+        }
         protected override void Configure()
         {
             container = new SimpleContainer();
 
             container.Singleton<IWindowManager, WindowManager>();
+            container.Singleton<IEffectsManager, DefaultEffectsManager>();
 
             container.PerRequest<MainViewModel>();
         }
