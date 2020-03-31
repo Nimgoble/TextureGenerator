@@ -76,6 +76,8 @@
     </Reference>
     <Reference Include="SharpDX.Mathematics, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.Mathematics.4.2.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -106,6 +108,10 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Framework\ColorToBrushConverter.cs" />
     <Compile Include="Framework\ITaskContext.cs" />
+    <Compile Include="Framework\TextureProcessor.cs" />
+    <Compile Include="Models\IPixelsSource.cs" />
+    <Compile Include="Models\PixelsSource.cs" />
+    <Compile Include="Models\TextureProfile.cs" />
     <Compile Include="ViewModels\DialogViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="Views\DialogView.xaml.cs">

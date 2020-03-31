@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Caliburn.Micro;
+using Newtonsoft.Json;
 
 using TextureGenerator.Framework;
 using TextureGenerator.Models;
@@ -150,12 +151,110 @@ namespace TextureGenerator.ViewModels
 		{
 			if (this.selectedColor == null || this.dialogViewModel != null)
 				return;
-			var texture = new Texture(this.sourceImage, this.selectedColor);
+			var textureProcessor = new TextureProcessor();
 			this.dialogViewModel = new DialogViewModel();
 			var pixelColors = this.sourceImage.CopyPixels();
-			this.dialogViewModel.AddTask(async (taskContext) => await texture.ProcessSource(pixelColors, this.dialogViewModel, taskContext));
+			TextureProfile textureProfile = null;
+			this.dialogViewModel.AddTask
+			(
+				async (taskContext) =>
+				{
+					textureProfile = await textureProcessor.GenerateTextureProfileAsync(pixelColors, this.selectedColor, this.dialogViewModel, taskContext);
+				}
+			);
 			this.windowManager.ShowDialog(this.dialogViewModel);
 			this.dialogViewModel = null;
+			this.Texture = new Texture(this.sourceImage, textureProfile);
+			this.DrawTextureOnOutput();
+		}
+		public void WriteTextureProfile(string outputFile)
+		{
+			if (!this.CanWriteTextureProfile || this.dialogViewModel != null)
+				return;
+
+			//var outputObject = new
+			//{
+			//	Blobs =
+			//		from blob
+			//		in this.texture.Blobs
+			//		select new
+			//		{
+			//			BlobColor = blob.BlobColor,
+			//			Pixels =
+			//				from pixel
+			//				in blob.Pixels
+			//				select new
+			//				{
+			//					Position = pixel.Position
+			//				}
+			//		}
+			//};
+			this.dialogViewModel = new DialogViewModel();
+			this.dialogViewModel.AddTask
+			(
+				async (taskContext) =>
+				{
+					try
+					{
+						File.WriteAllText(outputFile, JsonConvert.SerializeObject(this.texture.GetTextureProfile()));
+					}
+					catch (Exception ex)
+					{
+						taskContext.UpdateMessage($"Error writing texture profile: {ex.Message}");
+					}
+					taskContext.UpdateProgress(100);
+				}
+			);
+			this.windowManager.ShowDialog(this.dialogViewModel);
+			this.dialogViewModel = null;
+			
+		}
+		public bool CanWriteTextureProfile
+		{
+			get { return this.Texture != null; }
+		}
+		public void TestDeserializeOutput(string fileName)
+		{
+			if (this.dialogViewModel != null || this.sourceImage == null)
+				return;
+
+			TextureProfile textureProfile = null;
+			var pixelColors = this.sourceImage.CopyPixels();
+			var pixelsSource = PixelsSource.FromPixelColors(pixelColors);
+			this.dialogViewModel = new DialogViewModel();
+			this.dialogViewModel.AddTask
+			(
+				async (taskContext) =>
+				{
+					try
+					{
+						taskContext.UpdateMessage("Trying to load file.");
+						textureProfile = JsonConvert.DeserializeObject<TextureProfile>(File.ReadAllText(fileName));
+						textureProfile.Blobs.ForEach
+						(
+							blob =>
+							{
+								blob.PixelsSource = pixelsSource;
+								//blob.Pixels.ForEach(pixel => pixel.PixelColor = blob.BlobColor); //Doing this cut the file size down to 1/5 of the size.
+							}
+						);
+					}
+					catch(Exception ex)
+					{
+						taskContext.UpdateMessage($"Error loading file: {ex.Message}");
+					}
+					taskContext.UpdateProgress(100);
+				}
+			);
+			this.windowManager.ShowDialog(this.dialogViewModel);
+			this.dialogViewModel = null;
+			this.Texture = new Texture(this.sourceImage, textureProfile);
+			this.DrawTextureOnOutput();
+		}
+		private void DrawTextureOnOutput()
+		{
+			if (this.Texture == null)
+				return;
 			DrawingVisual dv = new DrawingVisual();
 			var src = this.outputImage;
 			using (DrawingContext dc = dv.RenderOpen())
@@ -290,6 +389,17 @@ namespace TextureGenerator.ViewModels
 			{
 				this.transparencyColor = value;
 				NotifyOfPropertyChange(() => TransparencyColor);
+			}
+		}
+		private Texture texture = null;
+		public Texture Texture 
+		{ 
+			get { return texture; } 
+			private set
+			{
+				this.texture = value;
+				NotifyOfPropertyChange(() => Texture);
+				NotifyOfPropertyChange(() => CanWriteTextureProfile);
 			}
 		}
 		public bool? DoReplacementAdditive { get; set; }
