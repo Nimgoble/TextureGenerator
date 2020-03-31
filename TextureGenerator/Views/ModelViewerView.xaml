@@ -15,7 +15,13 @@
 
 		<Button x:Name="bLoadModel" Grid.Row="0" Height="25" Width="125" Click="bLoadModel_Click">Load Model</Button>
 
-		<hx:Viewport3DX Grid.Row="1" Camera="{Binding Camera}" EffectsManager="{Binding EffectsManager}">
+		<hx:Viewport3DX Grid.Row="1" Camera="{Binding Camera}" EffectsManager="{Binding EffectsManager}" ZoomExtentsWhenLoaded="True" >
+			<hx:Viewport3DX.InputBindings>
+				<KeyBinding Command="hx:ViewportCommands.ZoomExtents" Gesture="Control+E" />
+				<MouseBinding Command="hx:ViewportCommands.Rotate" Gesture="RightClick" />
+				<MouseBinding Command="hx:ViewportCommands.Zoom" Gesture="MiddleClick" />
+				<MouseBinding Command="hx:ViewportCommands.Pan" Gesture="LeftClick" />
+			</hx:Viewport3DX.InputBindings>
 			<hx:AmbientLight3D Color="{Binding AmbientLightColor}" />
 			<hx:DirectionalLight3D Direction="{Binding Camera.LookDirection}" Color="{Binding DirectionalLightColor}" />
 			<hx:MeshGeometryModel3D Geometry="{Binding LoadedMesh}" Material="{Binding TestMaterial}" />

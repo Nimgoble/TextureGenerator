@@ -78,6 +78,7 @@ namespace TextureGenerator.ViewModels
 			{
 				this.sceneNode = scene.Root;
 				GroupModel.AddNode(this.sceneNode);
+				this.SetSceneMaterials();
 			}
 		}
 		private void SetSceneMaterials()
