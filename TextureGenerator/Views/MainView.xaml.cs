@@ -31,26 +31,6 @@ namespace TextureGenerator.Views
 		{
 			get { return this.DataContext as MainViewModel; }
 		}
-		private void btnLoadSource_Click(object sender, RoutedEventArgs e)
-		{
-			var dialog = new OpenFileDialog();
-			dialog.Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
-			dialog.InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-			if (dialog.ShowDialog() == true)
-			{
-				try
-				{
-					var vm = this.ViewModel;
-					if(vm != null)
-					{
-						vm.LoadSourceImageFromFile(dialog.FileName);
-					}
-				}
-				catch (Exception ex)
-				{
-				}
-			}
-		}
 		private void iSourceImage_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			var position = e.GetPosition(this.iSourceImage);
@@ -59,7 +39,6 @@ namespace TextureGenerator.Views
 				return;
 			vm.SetReplacementColorFromSourceAtPoint(position, this.iSourceImage.ActualWidth, this.iSourceImage.ActualHeight);
 		}
-
 		private void bReplaceWithColor_Click(object sender, RoutedEventArgs e)
 		{
 			Color replacementColor;
@@ -79,39 +58,6 @@ namespace TextureGenerator.Views
 			{
 				var fileName = dialog.FileName;
 				this.ViewModel?.SaveOutput(fileName);
-			}
-		}
-
-		private void btnWriteTextureProfile_Click(object sender, RoutedEventArgs e)
-		{
-			var dialog = new SaveFileDialog();
-			dialog.Filter = "JSON files (*.json) | *.json";
-			if (dialog.ShowDialog() == true)
-			{
-				var fileName = dialog.FileName;
-				this.ViewModel?.WriteTextureProfile(fileName);
-			}
-		}
-
-		private void bTestDeserializeOutput_Click(object sender, RoutedEventArgs e)
-		{
-			var dialog = new OpenFileDialog();
-			dialog.Filter = "JSON file (*.json) | *.json";
-			dialog.InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-			if (dialog.ShowDialog() == true)
-			{
-				try
-				{
-					var vm = this.ViewModel;
-					if (vm != null)
-					{
-						vm.TestDeserializeOutput(dialog.FileName);
-					}
-				}
-				catch (Exception ex)
-				{
-				}
-
 			}
 		}
 	}

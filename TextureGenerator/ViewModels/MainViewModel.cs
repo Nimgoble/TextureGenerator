@@ -26,31 +26,35 @@ namespace TextureGenerator.ViewModels
 			this.windowManager = windowManager;
 			this.effectsManager = effectsManager;
 			this.modelViewerViewModel = new ModelViewerViewModel(windowManager, effectsManager);
-			this.UseTolerance = false;
 			this.DoReplacementAdditive = true;
 		}
 
 		#region Methods
-		public void LoadSourceImageFromFile(string fileName)
+		public void LoadSource()
 		{
-			this.SourceImage = new BitmapImage(new Uri(fileName));
-			this.CopyToOutputImage(this.sourceImage);
+			var loadTextureViewModel = new LoadTextureViewModel(this.windowManager);
+			var result = this.windowManager.ShowDialog(loadTextureViewModel);
+			if(result == true)
+			{
+				this.SourceTexture = loadTextureViewModel.OutputTexture;
+				this.CopyToOutputImage(this.SourceTexture.Source);
+			}
 		}
 		public void SetReplacementColorFromSourceAtPoint(Point point, double actualWidth, double actualHeight)
 		{
-			var xScale = this.sourceImage.PixelWidth / actualWidth;
-			var yScale = this.sourceImage.PixelHeight / actualHeight;
+			var xScale = this.SourceTexture.Source.PixelWidth / actualWidth;
+			var yScale = this.SourceTexture.Source.PixelHeight / actualHeight;
 			var actualX = (int)(point.X * xScale);
 			var actualY = (int)(point.Y * yScale);
-			var pixels = this.sourceImage.CopyPixels();
+			var pixels = this.SourceTexture.Source.CopyPixels();
 			var pixel = pixels[actualY, actualX];
 			this.SelectedColor = new Color() { R = pixel.Red, G = pixel.Green, B = pixel.Blue, A = pixel.Alpha };
 		}
 		public void DoReplacement()
 		{
-			var pixels = this.sourceImage.CopyPixels();
+			var pixels = this.SourceTexture.Source.CopyPixels();
 			var outputPixels = this.DoReplacementAdditive.HasValue && this.DoReplacementAdditive.Value ? this.outputImage.CopyPixels() : pixels;
-			var tolerance = this.GetTolerance();
+			var tolerance = 0;/*this.GetTolerance();*/
 			for (int y = 0; y < pixels.GetLength(0); ++y)
 			{
 				for (int x = 0; x < pixels.GetLength(1); ++x)
@@ -89,183 +93,16 @@ namespace TextureGenerator.ViewModels
 			rtb.Render(dv);
 			this.CopyToOutputImage(rtb);
 		}
-		public void DrawDividingLine()
-		{
-			if (this.transparencyColor == null)
-				return;
-			var pixels = this.sourceImage.CopyPixels();
-			var blobYs = new List<Tuple<int, int>>();
-			var inBlob = false;
-			var startY = 0;
-			for (int y = 0; y < pixels.GetLength(0); ++y)
-			{
-				var hadColor = false;
-				for (int x = 0; x < pixels.GetLength(1); ++x)
-				{
-					var pixel = pixels[y, x];
-					var pixelColor = pixel.ToColor();
-					if (pixelColor.Equals(this.transparencyColor))
-						continue;
-					hadColor = true;
-					//var distance = Math.Abs(this.selectedColor.GetDistance(pixelColor));
-					//if (this.selectedColor.Equals(pixelColor) || distance <= tolerance)
-					//	outputPixels[y, x] = this.replacementColor.ToPixelColor();
-
-				}
-				if (hadColor && !inBlob)
-				{
-					inBlob = true;
-					startY = y;
-				}
-
-				if (!hadColor && inBlob)
-				{
-					inBlob = false;
-					blobYs.Add(new Tuple<int, int>(startY, y));
-				}
-			}
-
-			if (blobYs.Count < 2)
-				return;
-
-			DrawingVisual dv = new DrawingVisual();
-			var src = this.outputImage;
-			using (DrawingContext dc = dv.RenderOpen())
-			{
-				dc.DrawImage(src, new Rect(0, 0, src.PixelWidth, src.PixelHeight));
-				for (int i = 0; i < blobYs.Count - 1; ++i)
-				{
-					var current = blobYs[i];
-					var next = blobYs[i + 1];
-					var difference = next.Item1 - current.Item2;
-					var y = next.Item1 - (difference / 2);
-					dc.DrawLine(new Pen(Brushes.White, 1), new Point(0, y), new Point(src.Width - 1, y));
-				}
-			}
-			RenderTargetBitmap rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);
-			rtb.Render(dv);
-			this.CopyToOutputImage(rtb);
-		}
-		public void SetTransparencyColorToSelectedColor()
-		{
-			if (this.selectedColor == null)
-				return;
-			this.TransparencyColor = this.selectedColor;
-		}
-		public void TestTheTexture()
-		{
-			if (this.selectedColor == null || this.dialogViewModel != null)
-				return;
-			var textureProcessor = new TextureProcessor();
-			this.dialogViewModel = new DialogViewModel();
-			var pixelColors = this.sourceImage.CopyPixels();
-			TextureProfile textureProfile = null;
-			this.dialogViewModel.AddTask
-			(
-				async (taskContext) =>
-				{
-					textureProfile = await textureProcessor.GenerateTextureProfileAsync(pixelColors, this.selectedColor, this.dialogViewModel, taskContext);
-				}
-			);
-			this.windowManager.ShowDialog(this.dialogViewModel);
-			this.dialogViewModel = null;
-			this.Texture = new Texture(this.sourceImage, textureProfile);
-			this.DrawTextureOnOutput();
-		}
-		public void WriteTextureProfile(string outputFile)
-		{
-			if (!this.CanWriteTextureProfile || this.dialogViewModel != null)
-				return;
-
-			//var outputObject = new
-			//{
-			//	Blobs =
-			//		from blob
-			//		in this.texture.Blobs
-			//		select new
-			//		{
-			//			BlobColor = blob.BlobColor,
-			//			Pixels =
-			//				from pixel
-			//				in blob.Pixels
-			//				select new
-			//				{
-			//					Position = pixel.Position
-			//				}
-			//		}
-			//};
-			this.dialogViewModel = new DialogViewModel();
-			this.dialogViewModel.AddTask
-			(
-				async (taskContext) =>
-				{
-					try
-					{
-						File.WriteAllText(outputFile, JsonConvert.SerializeObject(this.texture.GetTextureProfile()));
-					}
-					catch (Exception ex)
-					{
-						taskContext.UpdateMessage($"Error writing texture profile: {ex.Message}");
-					}
-					taskContext.UpdateProgress(100);
-				}
-			);
-			this.windowManager.ShowDialog(this.dialogViewModel);
-			this.dialogViewModel = null;
-			
-		}
-		public bool CanWriteTextureProfile
-		{
-			get { return this.Texture != null; }
-		}
-		public void TestDeserializeOutput(string fileName)
-		{
-			if (this.dialogViewModel != null || this.sourceImage == null)
-				return;
-
-			TextureProfile textureProfile = null;
-			var pixelColors = this.sourceImage.CopyPixels();
-			var pixelsSource = PixelsSource.FromPixelColors(pixelColors);
-			this.dialogViewModel = new DialogViewModel();
-			this.dialogViewModel.AddTask
-			(
-				async (taskContext) =>
-				{
-					try
-					{
-						taskContext.UpdateMessage("Trying to load file.");
-						textureProfile = JsonConvert.DeserializeObject<TextureProfile>(File.ReadAllText(fileName));
-						textureProfile.Blobs.ForEach
-						(
-							blob =>
-							{
-								blob.PixelsSource = pixelsSource;
-								//blob.Pixels.ForEach(pixel => pixel.PixelColor = blob.BlobColor); //Doing this cut the file size down to 1/5 of the size.
-							}
-						);
-					}
-					catch(Exception ex)
-					{
-						taskContext.UpdateMessage($"Error loading file: {ex.Message}");
-					}
-					taskContext.UpdateProgress(100);
-				}
-			);
-			this.windowManager.ShowDialog(this.dialogViewModel);
-			this.dialogViewModel = null;
-			this.Texture = new Texture(this.sourceImage, textureProfile);
-			this.DrawTextureOnOutput();
-		}
 		private void DrawTextureOnOutput()
 		{
-			if (this.Texture == null)
+			if (this.SourceTexture == null)
 				return;
 			DrawingVisual dv = new DrawingVisual();
 			var src = this.outputImage;
 			using (DrawingContext dc = dv.RenderOpen())
 			{
 				dc.DrawImage(src, new Rect(0, 0, src.PixelWidth, src.PixelHeight));
-				texture.Blobs.ForEach
+				SourceTexture.Blobs.ForEach
 				(
 					blob =>
 					{
@@ -344,28 +181,21 @@ namespace TextureGenerator.ViewModels
 				dc.DrawEllipse(new SolidColorBrush(drawColor), new Pen(), centerPoint, width - i, height - i);
 			}
 		}
-		private int GetTolerance()
-		{
-			if (this.UseTolerance != true)
-				return 0;
-			int tolerance = 35000;
-			if (!Int32.TryParse(this.Tolerance, out tolerance))
-				tolerance = 35000;
-			return tolerance;
-		}
 		#endregion
 
 		#region Properties
-		private BitmapImage sourceImage;
-		public BitmapImage SourceImage 
-		{ 
-			get { return this.sourceImage; } 
-			protected set
+		private Texture sourceTexture = null;
+		public Texture SourceTexture
+		{
+			get { return this.sourceTexture; }
+			set
 			{
-				this.sourceImage = value;
+				this.sourceTexture = value;
+				NotifyOfPropertyChange(() => SourceTexture);
 				NotifyOfPropertyChange(() => SourceImage);
 			}
 		}
+		public BitmapSource SourceImage { get { return this.SourceTexture?.Source; } }
 		private WriteableBitmap outputImage;
 		public WriteableBitmap OutputImage
 		{
@@ -396,30 +226,7 @@ namespace TextureGenerator.ViewModels
 				NotifyOfPropertyChange(() => SelectedColor);
 			}
 		}
-		private Color transparencyColor;
-		public Color TransparencyColor
-		{
-			get { return this.transparencyColor; }
-			set
-			{
-				this.transparencyColor = value;
-				NotifyOfPropertyChange(() => TransparencyColor);
-			}
-		}
-		private Texture texture = null;
-		public Texture Texture 
-		{ 
-			get { return texture; } 
-			private set
-			{
-				this.texture = value;
-				NotifyOfPropertyChange(() => Texture);
-				NotifyOfPropertyChange(() => CanWriteTextureProfile);
-			}
-		}
 		public bool? DoReplacementAdditive { get; set; }
-		public bool? UseTolerance { get; set; }
-		public string Tolerance { get; set; }
 		private ModelViewerViewModel modelViewerViewModel = null;
 		public ModelViewerViewModel ModelViewerViewModel { get { return this.modelViewerViewModel; } }
 		#endregion

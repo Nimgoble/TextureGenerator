@@ -122,14 +122,23 @@
     <Compile Include="Models\PixelsSource.cs" />
     <Compile Include="Models\TextureProfile.cs" />
     <Compile Include="ViewModels\DialogViewModel.cs" />
+    <Compile Include="ViewModels\GenerateTextureViewModel.cs" />
+    <Compile Include="ViewModels\LoadTextureViewModel.cs" />
     <Compile Include="ViewModels\ModelViewerViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
+    <Compile Include="ViewModels\TextureViewModel.cs" />
     <Compile Include="Views\DialogView.xaml.cs">
       <DependentUpon>DialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Framework\IDialogContext.cs" />
     <Compile Include="Models\Texture.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="Views\GenerateTextureView.xaml.cs">
+      <DependentUpon>GenerateTextureView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LoadTextureView.xaml.cs">
+      <DependentUpon>LoadTextureView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -138,6 +147,9 @@
     </Compile>
     <Compile Include="Views\TaskView.xaml.cs">
       <DependentUpon>TaskView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TextureView.xaml.cs">
+      <DependentUpon>TextureView.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\DialogView.xaml">
       <SubType>Designer</SubType>
@@ -148,6 +160,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Framework\ImageHelper.cs" />
+    <Page Include="Views\GenerateTextureView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LoadTextureView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -157,6 +177,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TaskView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TextureView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
