@@ -29,26 +29,20 @@ namespace TextureGenerator.ViewModels
 			Texture outputTexture = null;
 			dialogViewModel.AddTask
 			(
-				async (taskContext) =>
+				(taskContext) =>
 				{
-					await Task.Run
-					(
-						() =>
-						{
-							try
-							{
-								taskContext.UpdateMessage("Trying to load file.");
-								var textureProfile = this.LoadTextureProfile(pixelsSource);
-								outputTexture = new Texture(image, textureProfile);
-							}
-							catch (Exception ex)
-							{
-								taskContext.UpdateMessage($"Error loading file: {ex.Message}");
-								return;
-							}
-							taskContext.UpdateProgress(100);
-						}
-					);
+					try
+					{
+						taskContext.UpdateMessage("Trying to load file.");
+						var textureProfile = this.LoadTextureProfile(pixelsSource);
+						outputTexture = new Texture(image, textureProfile);
+					}
+					catch (Exception ex)
+					{
+						taskContext.UpdateMessage($"Error loading file: {ex.Message}");
+						return;
+					}
+					taskContext.UpdateProgress(100);
 				}
 			);
 			this.windowManager.ShowDialog(dialogViewModel);

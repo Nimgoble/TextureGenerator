@@ -10,6 +10,7 @@
       Title="MainView">
 	<Page.Resources>
 		<framework:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+		<framework:PixelColorToHexStringConverter x:Key="PixelColorToHexStringConverter"/>
 	</Page.Resources>
 
 	<Grid>
@@ -37,15 +38,24 @@
 		</StackPanel>
 
 		<TabControl Grid.Row="1" Grid.ColumnSpan="2">
-			<TabItem Header="Images">
+			<TabItem Header="Source">
 				<Grid>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition></ColumnDefinition>
-						<ColumnDefinition></ColumnDefinition>
+						<ColumnDefinition Width="250" />
+						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
-					<Image Grid.Column="0" Grid.Row="1" x:Name="iSourceImage" Source="{Binding SourceImage}" MouseDown="iSourceImage_MouseDown"></Image>
-					<Image Grid.Column="1" Grid.Row="1" x:Name="iOutputImage" Source="{Binding OutputImage}"></Image>
+					<ListView Grid.Column="0" ItemsSource="{Binding SourceTexture.Blobs}" SelectedItem="{Binding SelectedBlob}">
+						<ListView.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding BlobColor, Converter={StaticResource PixelColorToHexStringConverter}}"/>
+							</DataTemplate>
+						</ListView.ItemTemplate>
+					</ListView>
+					<Image Grid.Column="1" x:Name="iSourceImage" Source="{Binding SourceImageFacade}" MouseDown="iSourceImage_MouseDown"></Image>
 				</Grid>
+			</TabItem>
+			<TabItem Header="Output">
+				<Image x:Name="iOutputImage" Source="{Binding OutputImage}"></Image>				
 			</TabItem>
 			<TabItem Header="Model Viewer">
 				<local:ModelViewerView DataContext="{Binding ModelViewerViewModel}"/>

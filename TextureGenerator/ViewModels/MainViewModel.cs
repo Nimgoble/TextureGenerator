@@ -117,8 +117,31 @@ namespace TextureGenerator.ViewModels
 			rtb.Render(dv);
 			this.CopyToOutputImage(rtb);
 		}
-		private void CopyToOutputImage(BitmapSource source)
+		private void DrawBlobBorderOnImage(PixelBlob blob, BitmapSource image)
 		{
+			if (image == null)
+				return;
+			DrawingVisual dv = new DrawingVisual();
+			var src = image;
+			using (DrawingContext dc = dv.RenderOpen())
+			{
+				dc.DrawImage(src, new Rect(0, 0, src.PixelWidth, src.PixelHeight));
+				if(blob != null)
+				{
+					var brush = new SolidColorBrush(Colors.White);
+					var pen = new Pen(brush, 5);
+					var size = new Size(1, 1);
+					blob.Border.ForEach(pixel => dc.DrawRectangle(brush, pen, new Rect(pixel.Position, size)));
+				}
+			}
+			RenderTargetBitmap rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);
+			rtb.Render(dv);
+			this.SourceImageFacade = this.CopyImageToWriteableBitmap(rtb);
+		}
+		private WriteableBitmap CopyImageToWriteableBitmap(BitmapSource source)
+		{
+			if (source == null)
+				return null;
 			// Quick and dirty, get the BitmapSource from an existing <Image> element
 			// in the XAML
 
@@ -143,7 +166,11 @@ namespace TextureGenerator.ViewModels
 			  new Int32Rect(0, 0, source.PixelWidth, source.PixelHeight),
 			  data, stride, 0);
 
-			this.OutputImage = target;
+			return target;
+		}
+		private void CopyToOutputImage(BitmapSource source)
+		{
+			this.OutputImage = this.CopyImageToWriteableBitmap(source);
 			this.UpdateModelMaterial();
 		}
 		private void UpdateModelMaterial()
@@ -192,10 +219,19 @@ namespace TextureGenerator.ViewModels
 			{
 				this.sourceTexture = value;
 				NotifyOfPropertyChange(() => SourceTexture);
-				NotifyOfPropertyChange(() => SourceImage);
+				this.SourceImageFacade = (this.sourceTexture != null) ? new WriteableBitmap(this.sourceTexture.Source) : null;
 			}
 		}
-		public BitmapSource SourceImage { get { return this.SourceTexture?.Source; } }
+		private WriteableBitmap sourceImageFacade = null;
+		public WriteableBitmap SourceImageFacade
+		{
+			get { return this.sourceImageFacade; }
+			set
+			{
+				this.sourceImageFacade = value;
+				NotifyOfPropertyChange(() => SourceImageFacade);
+			}
+		}
 		private WriteableBitmap outputImage;
 		public WriteableBitmap OutputImage
 		{
@@ -224,6 +260,17 @@ namespace TextureGenerator.ViewModels
 			{
 				this.selectedColor = value;
 				NotifyOfPropertyChange(() => SelectedColor);
+			}
+		}
+		private PixelBlob selectedBlob = null;
+		public PixelBlob SelectedBlob
+		{
+			get { return this.selectedBlob; }
+			set
+			{
+				this.selectedBlob = value;
+				NotifyOfPropertyChange(() => SelectedBlob);
+				this.DrawBlobBorderOnImage(this.selectedBlob, this.SourceTexture?.Source);
 			}
 		}
 		public bool? DoReplacementAdditive { get; set; }

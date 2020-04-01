@@ -18,6 +18,7 @@ namespace TextureGenerator.ViewModels
 		public Task AddTask(System.Action<ITaskContext> action)
 		{
 			var taskViewModel = new TaskViewModel(action);
+			taskViewModel.TaskFinished += TaskViewModel_TaskFinished;
 			Execute.OnUIThread
 			(
 				() =>
@@ -28,6 +29,14 @@ namespace TextureGenerator.ViewModels
 			);
 			return taskViewModel.Task;
 		}
+
+		private void TaskViewModel_TaskFinished(object sender, EventArgs e)
+		{
+			var taskViewModel = sender as TaskViewModel;
+			taskViewModel.TaskFinished -= TaskViewModel_TaskFinished;
+			NotifyOfPropertyChange(() => CanCloseDialog);
+		}
+
 		public void CloseDialog()
 		{
 			this.TryClose(true);

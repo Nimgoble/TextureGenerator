@@ -117,6 +117,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Framework\ColorToBrushConverter.cs" />
     <Compile Include="Framework\ITaskContext.cs" />
+    <Compile Include="Framework\PixelColorToHexStringConverter.cs" />
     <Compile Include="Framework\TextureProcessor.cs" />
     <Compile Include="Models\IPixelsSource.cs" />
     <Compile Include="Models\PixelsSource.cs" />

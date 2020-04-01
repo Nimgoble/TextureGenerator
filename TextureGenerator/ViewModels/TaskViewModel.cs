@@ -11,11 +11,18 @@ namespace TextureGenerator.ViewModels
 	{
 		public TaskViewModel(System.Action<ITaskContext> action)
 		{
-			this.Task = new Task(() => action(this));
+			this.Task = new Task
+				(
+					() =>
+					{
+						action(this);
+					}
+				);
 		}
 		public void Run()
 		{
 			this.Task.Start();
+			this.Task.GetAwaiter().OnCompleted(() => { this.OnTaskFinished(); });
 		}
 		public void UpdateProgress(int percentage)
 		{
@@ -24,6 +31,12 @@ namespace TextureGenerator.ViewModels
 		public void UpdateMessage(string message)
 		{
 			this.Message = message;
+		}
+		public event EventHandler TaskFinished;
+		private void OnTaskFinished()
+		{
+			this.IsComplete = true;
+			TaskFinished?.Invoke(this, null);
 		}
 
 		public Task Task { get; private set; }
@@ -35,7 +48,6 @@ namespace TextureGenerator.ViewModels
 			{
 				this.percentage = value;
 				NotifyOfPropertyChange(() => Percentage);
-				NotifyOfPropertyChange(() => IsComplete);
 			}
 		}
 		private string message = String.Empty;
@@ -48,6 +60,15 @@ namespace TextureGenerator.ViewModels
 				NotifyOfPropertyChange(() => Message);
 			}
 		}
-		public bool IsComplete { get { return this.Percentage == 100; } }
+		private bool isComplete = false;
+		public bool IsComplete 
+		{ 
+			get { return isComplete; } 
+			private set
+			{
+				this.isComplete = value;
+				NotifyOfPropertyChange(() => IsComplete);
+			}
+		}
 	}
 }
