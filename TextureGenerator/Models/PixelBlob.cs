@@ -14,6 +14,7 @@ namespace TextureGenerator.Models
 		{
 			this.pixelsSource = pixelsSource;
 		}
+		public string Name { get; set; }
 		public PixelColor BlobColor { get; set; }
 		public List<Pixel> Pixels { get; set; }
 		[JsonIgnore]

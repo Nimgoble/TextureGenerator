@@ -36,23 +36,23 @@ namespace TextureGenerator.ViewModels
 			var result = this.windowManager.ShowDialog(loadTextureViewModel);
 			if(result == true)
 			{
-				this.SourceTexture = loadTextureViewModel.OutputTexture;
-				this.CopyToOutputImage(this.SourceTexture.Source);
+				this.SourceTexture = new TextureViewModel(loadTextureViewModel.OutputTexture);
+				this.CopyToOutputImage(this.SourceTexture.Model.Source);
 			}
 		}
 		public void SetReplacementColorFromSourceAtPoint(Point point, double actualWidth, double actualHeight)
 		{
-			var xScale = this.SourceTexture.Source.PixelWidth / actualWidth;
-			var yScale = this.SourceTexture.Source.PixelHeight / actualHeight;
+			var xScale = this.SourceTexture.Model.Source.PixelWidth / actualWidth;
+			var yScale = this.SourceTexture.Model.Source.PixelHeight / actualHeight;
 			var actualX = (int)(point.X * xScale);
 			var actualY = (int)(point.Y * yScale);
-			var pixels = this.SourceTexture.Source.CopyPixels();
+			var pixels = this.SourceTexture.Model.Source.CopyPixels();
 			var pixel = pixels[actualY, actualX];
 			this.SelectedColor = new Color() { R = pixel.Red, G = pixel.Green, B = pixel.Blue, A = pixel.Alpha };
 		}
 		public void DoReplacement()
 		{
-			var pixels = this.SourceTexture.Source.CopyPixels();
+			var pixels = this.SourceTexture.Model.Source.CopyPixels();
 			var outputPixels = this.DoReplacementAdditive.HasValue && this.DoReplacementAdditive.Value ? this.outputImage.CopyPixels() : pixels;
 			var tolerance = 0;/*this.GetTolerance();*/
 			for (int y = 0; y < pixels.GetLength(0); ++y)
@@ -79,6 +79,29 @@ namespace TextureGenerator.ViewModels
 				encoder5.Frames.Add(BitmapFrame.Create(this.outputImage));
 				encoder5.Save(stream5);
 			}
+		}
+		public void SaveSourceTexture(string outputFile)
+		{
+			if (string.IsNullOrEmpty(outputFile) || this.dialogViewModel != null || this.sourceTexture == null)
+				return;
+			this.dialogViewModel = new DialogViewModel();
+			this.dialogViewModel.AddTask
+			(
+				(taskContext) =>
+				{
+					try
+					{
+						new TextureProfileWriter().SaveTextureProfile(outputFile, this.sourceTexture.Model.GetTextureProfile());
+					}
+					catch (Exception ex)
+					{
+						taskContext.UpdateMessage($"Error writing texture profile: {ex.Message}");
+					}
+					taskContext.UpdateProgress(100);
+				}
+			);
+			this.windowManager.ShowDialog(this.dialogViewModel);
+			this.dialogViewModel = null;
 		}
 		public void DrawRandomStuff()
 		{
@@ -109,7 +132,7 @@ namespace TextureGenerator.ViewModels
 						var brush = new SolidColorBrush(Colors.White);
 						var pen = new Pen(brush, 5);
 						var size = new Size(1, 1);
-						blob.Border.ForEach(pixel => dc.DrawRectangle(brush, pen, new Rect(pixel.Position, size)));
+						blob.Model.Border.ForEach(pixel => dc.DrawRectangle(brush, pen, new Rect(pixel.Position, size)));
 					}
 				);
 			}
@@ -211,15 +234,15 @@ namespace TextureGenerator.ViewModels
 		#endregion
 
 		#region Properties
-		private Texture sourceTexture = null;
-		public Texture SourceTexture
+		private TextureViewModel sourceTexture = null;
+		public TextureViewModel SourceTexture
 		{
 			get { return this.sourceTexture; }
 			set
 			{
 				this.sourceTexture = value;
 				NotifyOfPropertyChange(() => SourceTexture);
-				this.SourceImageFacade = (this.sourceTexture != null) ? new WriteableBitmap(this.sourceTexture.Source) : null;
+				this.SourceImageFacade = (this.sourceTexture != null) ? new WriteableBitmap(this.sourceTexture.Model.Source) : null;
 			}
 		}
 		private WriteableBitmap sourceImageFacade = null;
@@ -262,15 +285,15 @@ namespace TextureGenerator.ViewModels
 				NotifyOfPropertyChange(() => SelectedColor);
 			}
 		}
-		private PixelBlob selectedBlob = null;
-		public PixelBlob SelectedBlob
+		private PixelBlobViewModel selectedBlob = null;
+		public PixelBlobViewModel SelectedBlob
 		{
 			get { return this.selectedBlob; }
 			set
 			{
 				this.selectedBlob = value;
 				NotifyOfPropertyChange(() => SelectedBlob);
-				this.DrawBlobBorderOnImage(this.selectedBlob, this.SourceTexture?.Source);
+				this.DrawBlobBorderOnImage(this.selectedBlob.Model, this.SourceTexture?.Model.Source);
 			}
 		}
 		public bool? DoReplacementAdditive { get; set; }

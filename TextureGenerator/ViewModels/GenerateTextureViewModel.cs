@@ -64,33 +64,15 @@ namespace TextureGenerator.ViewModels
 		{
 			if (!this.CanWriteTextureProfile || this.dialogViewModel != null)
 				return;
-
-			//var outputObject = new
-			//{
-			//	Blobs =
-			//		from blob
-			//		in this.texture.Blobs
-			//		select new
-			//		{
-			//			BlobColor = blob.BlobColor,
-			//			Pixels =
-			//				from pixel
-			//				in blob.Pixels
-			//				select new
-			//				{
-			//					Position = pixel.Position
-			//				}
-			//		}
-			//};
 			this.dialogViewModel = new DialogViewModel();
 			bool success = true;
 			this.dialogViewModel.AddTask
 			(
-				async (taskContext) =>
+				(taskContext) =>
 				{
 					try
 					{
-						File.WriteAllText(outputFile, JsonConvert.SerializeObject(this.texture.GetTextureProfile()));
+						new TextureProfileWriter().SaveTextureProfile(outputFile, this.texture.GetTextureProfile());
 					}
 					catch (Exception ex)
 					{

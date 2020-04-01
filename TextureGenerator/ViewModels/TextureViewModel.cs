@@ -14,7 +14,9 @@ namespace TextureGenerator.ViewModels
 		public TextureViewModel(Texture model)
 		{
 			this.model = model;
+			this.Blobs = (from blob in model.Blobs select new PixelBlobViewModel(blob)).OrderBy(x => x.BlobDisplayName).ToList();
 		}
 		public Texture Model { get { return this.model; } }
+		public List<PixelBlobViewModel> Blobs { get; set; }
 	}
 }

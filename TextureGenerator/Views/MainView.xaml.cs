@@ -60,5 +60,16 @@ namespace TextureGenerator.Views
 				this.ViewModel?.SaveOutput(fileName);
 			}
 		}
+
+		private void btnSaveTexture_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new SaveFileDialog();
+			dialog.Filter = "JSON files (*.json) | *.json";
+			if (dialog.ShowDialog() == true)
+			{
+				var fileName = dialog.FileName;
+				this.ViewModel?.SaveSourceTexture(fileName);
+			}
+		}
 	}
 }

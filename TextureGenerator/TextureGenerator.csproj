@@ -119,6 +119,7 @@
     <Compile Include="Framework\ITaskContext.cs" />
     <Compile Include="Framework\PixelColorToHexStringConverter.cs" />
     <Compile Include="Framework\TextureProcessor.cs" />
+    <Compile Include="Framework\TextureProfileWriter.cs" />
     <Compile Include="Models\IPixelsSource.cs" />
     <Compile Include="Models\PixelsSource.cs" />
     <Compile Include="Models\TextureProfile.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="ViewModels\GenerateTextureViewModel.cs" />
     <Compile Include="ViewModels\LoadTextureViewModel.cs" />
     <Compile Include="ViewModels\ModelViewerViewModel.cs" />
+    <Compile Include="ViewModels\PixelBlobViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="ViewModels\TextureViewModel.cs" />
     <Compile Include="Views\DialogView.xaml.cs">
