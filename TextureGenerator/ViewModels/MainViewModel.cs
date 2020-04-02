@@ -116,6 +116,13 @@ namespace TextureGenerator.ViewModels
 			rtb.Render(dv);
 			this.CopyToOutputImage(rtb);
 		}
+		public void ToggleBlobEdit()
+		{
+			if (!this.CanToggleBlobEdit)
+				return;
+			this.selectedBlob.IsEditting = !this.selectedBlob.IsEditting;
+		}
+		public bool CanToggleBlobEdit { get { return this.selectedBlob != null; } }
 		private void DrawTextureOnOutput()
 		{
 			if (this.SourceTexture == null)
@@ -291,9 +298,12 @@ namespace TextureGenerator.ViewModels
 			get { return this.selectedBlob; }
 			set
 			{
+				if (this.selectedBlob != null)
+					this.selectedBlob.IsEditting = false;
 				this.selectedBlob = value;
 				NotifyOfPropertyChange(() => SelectedBlob);
-				this.DrawBlobBorderOnImage(this.selectedBlob.Model, this.SourceTexture?.Model.Source);
+				NotifyOfPropertyChange(() => CanToggleBlobEdit);
+				this.DrawBlobBorderOnImage(this.selectedBlob?.Model, this.SourceTexture?.Model.Source);
 			}
 		}
 		public bool? DoReplacementAdditive { get; set; }

@@ -15,6 +15,9 @@ namespace TextureGenerator.ViewModels
 		public PixelBlobViewModel(PixelBlob model)
 		{
 			this.model = model;
+			this.IsEditting = false;
+			if (string.IsNullOrEmpty(this.Name))
+				this.Name = this.HexColor;
 		}
 
 		public PixelBlob Model { get { return this.model; } }
@@ -27,13 +30,25 @@ namespace TextureGenerator.ViewModels
 					return;
 				this.model.Name = value;
 				NotifyOfPropertyChange(() => Name);
-				NotifyOfPropertyChange(() => BlobDisplayName);
+				//NotifyOfPropertyChange(() => BlobDisplayName);
 			}
 		}
 		public string HexColor { get { return this.model.BlobColor.ToColor().ToHexString(); } }
-		public string BlobDisplayName
-		{
-			get { return string.IsNullOrEmpty(this.Name) ? this.HexColor : this.Name; }
+		//public string BlobDisplayName
+		//{
+		//	get { return string.IsNullOrEmpty(this.Name) ? this.HexColor : this.Name; }
+		//}
+		private bool isEditting = false;
+		public bool IsEditting 
+		{ 
+			get { return this.isEditting; }
+			set
+			{
+				if (value == this.isEditting)
+					return;
+				this.isEditting = value;
+				NotifyOfPropertyChange(() => IsEditting);
+			}
 		}
 	}
 }
