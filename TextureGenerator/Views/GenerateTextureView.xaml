@@ -9,6 +9,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
 	<UserControl.Resources>
 		<framework:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+		<framework:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 	</UserControl.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
@@ -35,7 +36,17 @@
 					</Grid.RowDefinitions>
 					<Image Grid.Row="0" x:Name="iSourceImage" Source="{Binding SourceImage}" MouseDown="iSourceImage_MouseDown"></Image>
 					<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
-						<Button x:Name="bLoadImage" Height="25" Width="150" HorizontalAlignment="Center" Click="bLoadImage_Click" Margin="10,0">Load Image</Button>
+						<Button 
+							x:Name="bLoadImage" 
+							Height="25" 
+							Width="150" 
+							HorizontalAlignment="Center" 
+							Click="bLoadImage_Click" 
+							Margin="10,0" 
+							Visibility="{Binding WasNotPassedSource, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter={x:Static Visibility.Collapsed}}"
+						>
+							Load Image
+						</Button>
 						<Button x:Name="GenerateTextureProfile" Height="25" Width="150" HorizontalAlignment="Center" Margin="10,0">Generate Texture Profile</Button>
 					</StackPanel>
 				</Grid>

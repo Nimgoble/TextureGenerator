@@ -54,6 +54,15 @@ namespace TextureGenerator.ViewModels
 		{
 			this.TryClose(false);
 		}
+		public void GenerateTextureForImage()
+		{
+			var generateTextureViewModel = new GenerateTextureViewModel(this.windowManager, this.LoadImage());
+			var result = this.windowManager.ShowDialog(generateTextureViewModel);
+			if (result != true)
+				return;
+			this.TextureProfilePath = generateTextureViewModel.SavedFile;
+		}
+		public bool CanGenerateTextureForImage { get { return !string.IsNullOrEmpty(this.ImagePath); } }
 		private TextureProfile LoadTextureProfile(IPixelsSource pixelsSource)
 		{
 			TextureProfile textureProfile = JsonConvert.DeserializeObject<TextureProfile>(File.ReadAllText(this.TextureProfilePath));
@@ -85,6 +94,7 @@ namespace TextureGenerator.ViewModels
 				this.imagePath = value;
 				NotifyOfPropertyChange(() => ImagePath);
 				NotifyOfPropertyChange(() => CanLoad);
+				NotifyOfPropertyChange(() => CanGenerateTextureForImage);
 			}
 		}
 		private string textureProfilePath = string.Empty;

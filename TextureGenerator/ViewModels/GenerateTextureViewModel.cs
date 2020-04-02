@@ -18,16 +18,19 @@ namespace TextureGenerator.ViewModels
 	{
 		private readonly IWindowManager windowManager;
 		private DialogViewModel dialogViewModel = null;
-		public GenerateTextureViewModel(IWindowManager windowManager)
+		private BitmapSource passedBitmapSource;
+		public GenerateTextureViewModel(IWindowManager windowManager, BitmapSource bitmapSource = null)
 		{
 			this.windowManager = windowManager;
+			this.passedBitmapSource = bitmapSource;
+			if (this.passedBitmapSource != null)
+				this.SetSourceImageFromSource(this.passedBitmapSource);
 			this.UseTolerance = false;
 		}
 		#region Methods
 		public void LoadSourceImageFromFile(string fileName)
 		{
-			this.originalSource = new BitmapImage(new Uri(fileName));
-			this.SourceImage = new WriteableBitmap(this.originalSource);
+			this.SetSourceImageFromSource(new BitmapImage(new Uri(fileName)));
 		}
 		public void GenerateTextureProfile()
 		{
@@ -85,7 +88,10 @@ namespace TextureGenerator.ViewModels
 			this.windowManager.ShowDialog(this.dialogViewModel);
 			this.dialogViewModel = null;
 			if (success)
+			{
+				this.SavedFile = outputFile;
 				this.TryClose(true);
+			}
 		}
 		public bool CanWriteTextureProfile
 		{
@@ -127,9 +133,16 @@ namespace TextureGenerator.ViewModels
 				tolerance = 35000;
 			return tolerance;
 		}
+		private void SetSourceImageFromSource(BitmapSource bitmapSource)
+		{
+			this.originalSource = bitmapSource;
+			this.SourceImage = (bitmapSource == null) ? null : new WriteableBitmap(bitmapSource);
+		}
 		#endregion
 		#region Properties
-		private BitmapImage originalSource = null;
+		private string savedFile = string.Empty;
+		public string SavedFile { get { return this.savedFile; } private set { this.savedFile = value; } }
+		private BitmapSource originalSource = null;
 		private WriteableBitmap sourceImage;
 		public WriteableBitmap SourceImage
 		{
@@ -164,6 +177,10 @@ namespace TextureGenerator.ViewModels
 		}
 		public bool? UseTolerance { get; set; }
 		public string Tolerance { get; set; }
+		public bool WasNotPassedSource
+		{
+			get { return this.passedBitmapSource == null; }
+		}
 		#endregion
 	}
 }
