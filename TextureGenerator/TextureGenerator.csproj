@@ -122,12 +122,14 @@
     <Compile Include="Framework\TextureProcessor.cs" />
     <Compile Include="Framework\TextureProfileWriter.cs" />
     <Compile Include="Models\IPixelsSource.cs" />
+    <Compile Include="Models\PixelBlobGroup.cs" />
     <Compile Include="Models\PixelsSource.cs" />
     <Compile Include="Models\TextureProfile.cs" />
     <Compile Include="ViewModels\DialogViewModel.cs" />
     <Compile Include="ViewModels\GenerateTextureViewModel.cs" />
     <Compile Include="ViewModels\LoadTextureViewModel.cs" />
     <Compile Include="ViewModels\ModelViewerViewModel.cs" />
+    <Compile Include="ViewModels\PixelBlobGroupViewModel.cs" />
     <Compile Include="ViewModels\PixelBlobViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="ViewModels\TextureViewModel.cs" />
@@ -148,6 +150,9 @@
     </Compile>
     <Compile Include="Views\ModelViewerView.xaml.cs">
       <DependentUpon>ModelViewerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PixelBlobGroupView.xaml.cs">
+      <DependentUpon>PixelBlobGroupView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TaskView.xaml.cs">
       <DependentUpon>TaskView.xaml</DependentUpon>
@@ -177,6 +182,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ModelViewerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PixelBlobGroupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

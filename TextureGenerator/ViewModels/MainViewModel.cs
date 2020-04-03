@@ -29,7 +29,7 @@ namespace TextureGenerator.ViewModels
 			this.DoReplacementAdditive = true;
 		}
 
-		#region Methods
+		#region Public Methods
 		public void LoadSource()
 		{
 			var loadTextureViewModel = new LoadTextureViewModel(this.windowManager);
@@ -123,6 +123,28 @@ namespace TextureGenerator.ViewModels
 			this.selectedBlob.IsEditting = !this.selectedBlob.IsEditting;
 		}
 		public bool CanToggleBlobEdit { get { return this.selectedBlob != null; } }
+		public void AddEmptyPixelBlobGroup()
+		{
+			this.SourceTexture.AddEmptyPixelBlobGroup();
+		}
+		public bool CanAddEmptyPixelBlobGroup { get { return this.SourceTexture != null; } }
+		public void AddSelectedBlobToSelectedBlobGroup()
+		{
+			if (!CanAddSelectedBlobToSelectedBlobGroup)
+				return;
+			this.selectedBlobGroup.Blobs.Add(this.selectedBlob);
+			NotifyOfPropertyChange(() => CanAddSelectedBlobToSelectedBlobGroup);
+		}
+		public bool CanAddSelectedBlobToSelectedBlobGroup 
+		{ 
+			get 
+			{
+				return this.SelectedBlob != null && this.SelectedBlobGroup != null && !this.SelectedBlobGroup.Blobs.Contains(this.selectedBlob);
+			} 
+		}
+		#endregion
+
+		#region Private Methods
 		private void DrawTextureOnOutput()
 		{
 			if (this.SourceTexture == null)
@@ -248,8 +270,14 @@ namespace TextureGenerator.ViewModels
 			set
 			{
 				this.sourceTexture = value;
+				if(this.sourceTexture == null)
+				{
+					this.SelectedBlob = null;
+					this.SelectedBlobGroup = null;
+				}
 				NotifyOfPropertyChange(() => SourceTexture);
 				this.SourceImageFacade = (this.sourceTexture != null) ? new WriteableBitmap(this.sourceTexture.Model.Source) : null;
+				NotifyOfPropertyChange(() => CanAddEmptyPixelBlobGroup);
 			}
 		}
 		private WriteableBitmap sourceImageFacade = null;
@@ -303,7 +331,19 @@ namespace TextureGenerator.ViewModels
 				this.selectedBlob = value;
 				NotifyOfPropertyChange(() => SelectedBlob);
 				NotifyOfPropertyChange(() => CanToggleBlobEdit);
+				NotifyOfPropertyChange(() => CanAddSelectedBlobToSelectedBlobGroup);
 				this.DrawBlobBorderOnImage(this.selectedBlob?.Model, this.SourceTexture?.Model.Source);
+			}
+		}
+		private PixelBlobGroupViewModel selectedBlobGroup = null;
+		public PixelBlobGroupViewModel SelectedBlobGroup
+		{
+			get { return this.selectedBlobGroup; }
+			set
+			{
+				this.selectedBlobGroup = value;
+				NotifyOfPropertyChange(() => SelectedBlobGroup);
+				NotifyOfPropertyChange(() => CanAddSelectedBlobToSelectedBlobGroup);
 			}
 		}
 		public bool? DoReplacementAdditive { get; set; }

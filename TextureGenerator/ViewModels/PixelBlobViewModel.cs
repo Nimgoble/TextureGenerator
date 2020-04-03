@@ -30,14 +30,9 @@ namespace TextureGenerator.ViewModels
 					return;
 				this.model.Name = value;
 				NotifyOfPropertyChange(() => Name);
-				//NotifyOfPropertyChange(() => BlobDisplayName);
 			}
 		}
 		public string HexColor { get { return this.model.BlobColor.ToColor().ToHexString(); } }
-		//public string BlobDisplayName
-		//{
-		//	get { return string.IsNullOrEmpty(this.Name) ? this.HexColor : this.Name; }
-		//}
 		private bool isEditting = false;
 		public bool IsEditting 
 		{ 

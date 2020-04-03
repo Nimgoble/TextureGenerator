@@ -11,8 +11,10 @@ namespace TextureGenerator.Models
 		public TextureProfile()
 		{
 			this.Blobs = new List<PixelBlob>();
+			this.BlobGroups = new List<PixelBlobGroup>();
 		}
 		public List<PixelBlob> Blobs { get; set; }
 		public PixelColor? TransparencyColor { get; set; }
+		public List<PixelBlobGroup> BlobGroups { get; set; }
 	}
 }
