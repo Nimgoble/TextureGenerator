@@ -13,5 +13,6 @@ namespace TextureGenerator.Models
 		Pixel GetSibling(Pixel target, SiblingDirection siblingDirection, bool ofSameColorConstraint);
 		Pixel[] GetSiblings(Pixel target, bool ofSameColorConstraint);
 		bool AreSiblings(Pixel a, Pixel b, bool ofSameColorConstraint);
+		PixelColor[,] ToPixelColorArray();
 	}
 }

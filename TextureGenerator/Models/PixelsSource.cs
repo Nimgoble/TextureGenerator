@@ -47,26 +47,27 @@ namespace TextureGenerator.Models
 		public Pixel[,] Pixels { get; }
 		public List<Pixel> PixelsList { get { return this.pixelsList; } }
 
+		public PixelColor[,] ToPixelColorArray()
+		{
+			return this.Pixels.Convert((x, y, p) => p.PixelColor);
+		}
+
 		public static PixelsSource FromPixelColors(PixelColor[,] pixelColors)
 		{
-			var yLength = pixelColors.GetLength(0);
-			var xLength = pixelColors.GetLength(1);
-			var pixels = new Pixel[yLength, xLength];
 			var pixelsList = new List<Pixel>();
-			for (int y = 0; y < yLength; ++y)
-			{
-				for (int x = 0; x < xLength; ++x)
-				{
-					var pixelColor = pixelColors[y, x];
-					var pixel = new Pixel
+			var pixels = pixelColors.Convert
+				(
+					(x, y, pixelColor) =>
 					{
-						PixelColor = pixelColor,
-						Position = new System.Windows.Point(x, y)
-					};
-					pixels[y, x] = pixel;
-					pixelsList.Add(pixel);
-				}
-			}
+						var pixel = new Pixel
+						{
+							PixelColor = pixelColor,
+							Position = new System.Windows.Point(x, y)
+						};
+						pixelsList.Add(pixel);
+						return pixel;
+					}
+				);
 			return new PixelsSource(pixels, pixelsList);
 		}
 	}

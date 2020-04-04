@@ -114,6 +114,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Algorithms\IAlgorithm.cs" />
+    <Compile Include="Algorithms\IAlgorithmTarget.cs" />
+    <Compile Include="Algorithms\TestAlgorithm.cs" />
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Framework\BooleanToVisibilityConverter.cs" />
     <Compile Include="Framework\ColorToBrushConverter.cs" />

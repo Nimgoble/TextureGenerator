@@ -7,10 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 
+using TextureGenerator.Algorithms;
 using TextureGenerator.Models;
 namespace TextureGenerator.ViewModels
 {
-	public class PixelBlobGroupViewModel : Screen
+	public class PixelBlobGroupViewModel : Screen, IAlgorithmTarget
 	{
 		private readonly PixelBlobGroup model;
 		private readonly NotifyCollectionChangedAction[] updateActions = new NotifyCollectionChangedAction[]
@@ -87,6 +88,7 @@ namespace TextureGenerator.ViewModels
 					return;
 				this.model.Name = value;
 				NotifyOfPropertyChange(() => Name);
+				NotifyOfPropertyChange(() => AlgorithmTargetName);
 			}
 		}
 		private bool isEditting = false;
@@ -101,6 +103,16 @@ namespace TextureGenerator.ViewModels
 				NotifyOfPropertyChange(() => IsEditting);
 			}
 		}
+		#endregion
+
+		#region IAlgorithmTarget
+		public string AlgorithmTargetName { get { return this.Name; } }
+		public IPixelsSource GetPixelsSource()
+		{
+			return this.Blobs.FirstOrDefault()?.GetPixelsSource();
+		}
+		public List<Pixel> AlgorithmPixels { get { return this.Blobs.SelectMany(x => x.AlgorithmPixels).ToList(); } }
+		public List<Pixel> AlgorithmBorderPixels { get { return this.Blobs.SelectMany(x => x.AlgorithmBorderPixels).ToList(); } }
 		#endregion
 	}
 }

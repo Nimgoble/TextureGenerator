@@ -126,5 +126,21 @@ namespace TextureGenerator.Framework
         {
             return $"#{color.R.ToString("X2")}{color.G.ToString("X2")}{color.B.ToString("X2")}{color.A.ToString("X2")}";
         }
+        public static T2[,] Convert<T1, T2>(this T1[,] origin, Func<int, int, T1, T2> conversionMethod)
+        {
+            var yLength = origin.GetLength(0);
+            var xLength = origin.GetLength(1);
+            var convertedArray = new T2[yLength, xLength];
+            for (int y = 0; y < yLength; ++y)
+            {
+                for (int x = 0; x < xLength; ++x)
+                {
+                    var t1 = origin[y, x];
+                    var converted = conversionMethod(x, y, t1);
+                    convertedArray[y, x] = converted;
+                }
+            }
+            return convertedArray;
+        }
     }
 }

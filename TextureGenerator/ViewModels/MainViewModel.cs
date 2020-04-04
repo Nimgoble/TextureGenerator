@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using Caliburn.Micro;
 using Newtonsoft.Json;
 using HelixToolkit.Wpf.SharpDX;
 
+using TextureGenerator.Algorithms;
 using TextureGenerator.Framework;
 using TextureGenerator.Models;
 namespace TextureGenerator.ViewModels
@@ -27,6 +29,8 @@ namespace TextureGenerator.ViewModels
 			this.effectsManager = effectsManager;
 			this.modelViewerViewModel = new ModelViewerViewModel(windowManager, effectsManager);
 			this.DoReplacementAdditive = true;
+			this.SelectedAlgorithmTargets = new ObservableCollection<IAlgorithmTarget>();
+			this.algorithms.Add(new TestAlgorithm());
 		}
 
 		#region Public Methods
@@ -142,6 +146,35 @@ namespace TextureGenerator.ViewModels
 				return this.SelectedBlob != null && this.SelectedBlobGroup != null && !this.SelectedBlobGroup.Blobs.Contains(this.selectedBlob);
 			} 
 		}
+		public void SelectedAlgorithTargetsChanged(System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			if(e.AddedItems != null)
+			{
+				foreach (IAlgorithmTarget target in e.AddedItems)
+				{
+					this.SelectedAlgorithmTargets.Add(target);
+				}
+			}
+			if(e.RemovedItems != null)
+			{
+				foreach (IAlgorithmTarget target in e.RemovedItems)
+				{
+					this.SelectedAlgorithmTargets.Remove(target);
+				}
+			}
+			NotifyOfPropertyChange(() => CanRunAlgorithm);
+		}
+		public void RunAlgorithm()
+		{
+			if (!this.CanRunAlgorithm)
+				return;
+			foreach (var target in this.SelectedAlgorithmTargets)
+			{
+				var result = this.selectedAlgorithm.DrawAlgorithm(target);
+				this.OutputImage.PutPixels(result, 0, 0);
+			}
+		}
+		public bool CanRunAlgorithm { get { return this.SelectedAlgorithm != null && this.SelectedAlgorithmTargets.Count > 0; } }
 		#endregion
 
 		#region Private Methods
@@ -260,6 +293,10 @@ namespace TextureGenerator.ViewModels
 				dc.DrawEllipse(new SolidColorBrush(drawColor), new Pen(), centerPoint, width - i, height - i);
 			}
 		}
+		private void BlobGroups_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			NotifyOfPropertyChange(() => AlgorithmTargets);
+		}
 		#endregion
 
 		#region Properties
@@ -269,17 +306,24 @@ namespace TextureGenerator.ViewModels
 			get { return this.sourceTexture; }
 			set
 			{
+				if(this.sourceTexture != null)
+					this.sourceTexture.BlobGroups.CollectionChanged -= BlobGroups_CollectionChanged;
+
 				this.sourceTexture = value;
 				if(this.sourceTexture == null)
 				{
 					this.SelectedBlob = null;
 					this.SelectedBlobGroup = null;
 				}
+				else
+					this.sourceTexture.BlobGroups.CollectionChanged += BlobGroups_CollectionChanged;
 				NotifyOfPropertyChange(() => SourceTexture);
 				this.SourceImageFacade = (this.sourceTexture != null) ? new WriteableBitmap(this.sourceTexture.Model.Source) : null;
 				NotifyOfPropertyChange(() => CanAddEmptyPixelBlobGroup);
+				NotifyOfPropertyChange(() => AlgorithmTargets);
 			}
 		}
+
 		private WriteableBitmap sourceImageFacade = null;
 		public WriteableBitmap SourceImageFacade
 		{
@@ -346,6 +390,31 @@ namespace TextureGenerator.ViewModels
 				NotifyOfPropertyChange(() => CanAddSelectedBlobToSelectedBlobGroup);
 			}
 		}
+		private List<IAlgorithm> algorithms = new List<IAlgorithm>();
+		public List<IAlgorithm> Algorithms { get { return algorithms; } }
+		private IAlgorithm selectedAlgorithm = null;
+		public IAlgorithm SelectedAlgorithm
+		{
+			get { return this.selectedAlgorithm; }
+			set
+			{
+				this.selectedAlgorithm = value;
+				NotifyOfPropertyChange(() => SelectedAlgorithm);
+				NotifyOfPropertyChange(() => CanRunAlgorithm);
+			}
+		}
+		public List<IAlgorithmTarget> AlgorithmTargets 
+		{ 
+			get 
+			{
+				if (this.SourceTexture == null)
+					return null;
+				var groups = this.SourceTexture.BlobGroups.ToArray() as IAlgorithmTarget[];
+				var result = groups.Concat(this.SourceTexture.Blobs.ToArray() as IAlgorithmTarget[]);
+				return result.ToList(); 
+			} 
+		}
+		public ObservableCollection<IAlgorithmTarget> SelectedAlgorithmTargets{ get; set; }
 		public bool? DoReplacementAdditive { get; set; }
 		private ModelViewerViewModel modelViewerViewModel = null;
 		public ModelViewerViewModel ModelViewerViewModel { get { return this.modelViewerViewModel; } }

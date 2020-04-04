@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 
+using TextureGenerator.Algorithms;
 using TextureGenerator.Models;
 using TextureGenerator.Framework;
 namespace TextureGenerator.ViewModels
 {
-	public class PixelBlobViewModel : Screen
+	public class PixelBlobViewModel : Screen, IAlgorithmTarget
 	{
 		private readonly PixelBlob model;
 		public PixelBlobViewModel(PixelBlob model)
@@ -30,6 +31,7 @@ namespace TextureGenerator.ViewModels
 					return;
 				this.model.Name = value;
 				NotifyOfPropertyChange(() => Name);
+				NotifyOfPropertyChange(() => AlgorithmTargetName);
 			}
 		}
 		public string HexColor { get { return this.model.BlobColor.ToColor().ToHexString(); } }
@@ -45,5 +47,14 @@ namespace TextureGenerator.ViewModels
 				NotifyOfPropertyChange(() => IsEditting);
 			}
 		}
+		#region IAlgorithmTarget
+		public string AlgorithmTargetName { get { return this.Name; } }
+		public IPixelsSource GetPixelsSource()
+		{
+			return this.Model.PixelsSource;
+		}
+		public List<Pixel> AlgorithmPixels { get { return this.Model.Pixels; } }
+		public List<Pixel> AlgorithmBorderPixels { get { return this.Model.Border; } }
+		#endregion
 	}
 }
