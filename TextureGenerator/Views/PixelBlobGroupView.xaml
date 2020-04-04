@@ -47,7 +47,28 @@
 			</Button>
 		</Grid>
 		
-		<ListView Grid.Row="1" ItemsSource="{Binding Blobs}" Margin="25,0" BorderThickness="0">
+		<ListView x:Name="GroupListView" Grid.Row="1" ItemsSource="{Binding Blobs}" Margin="25,0" BorderThickness="0">
+			<ListView.View>
+				<GridView>
+					<GridView.Columns>
+						<GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
+						<GridViewColumn>
+							<GridViewColumn.CellTemplate>
+								<DataTemplate>
+									<Button 
+										Width="100" 
+										Height="25"
+										cal:Action.TargetWithoutContext="{Binding ElementName=GroupListView, Path=DataContext}"
+										cal:Message.Attach="[Event Click] = [Action RemoveBlob($dataContext)]"
+									>
+										Remove
+									</Button>
+								</DataTemplate>
+							</GridViewColumn.CellTemplate>
+						</GridViewColumn>
+					</GridView.Columns>
+				</GridView>
+			</ListView.View>
 			<ListView.ItemTemplate>
 				<DataTemplate>
 					<TextBlock Text="{Binding Name}"/>

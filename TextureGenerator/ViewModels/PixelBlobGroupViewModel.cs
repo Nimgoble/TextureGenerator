@@ -33,6 +33,12 @@ namespace TextureGenerator.ViewModels
 		{
 			this.IsEditting = !this.IsEditting;
 		}
+		public void RemoveBlob(PixelBlobViewModel pixelBlobViewModel)
+		{
+			if (pixelBlobViewModel == null)
+				return;
+			this.Blobs.Remove(pixelBlobViewModel);
+		}
 		#endregion
 
 		#region Private Methods
