@@ -172,6 +172,7 @@ namespace TextureGenerator.ViewModels
 			{
 				var result = this.selectedAlgorithm.DrawAlgorithm(target);
 				this.OutputImage.PutPixels(result, 0, 0);
+				UpdateModelMaterial();
 			}
 		}
 		public bool CanRunAlgorithm { get { return this.SelectedAlgorithm != null && this.SelectedAlgorithmTargets.Count > 0; } }

@@ -90,6 +90,15 @@ namespace TextureGenerator.Framework
             byte a = (byte)(255);
             return Color.FromArgb(a, r, g, b);
         }
+        public static PixelColor Blend(this PixelColor color, PixelColor backColor, double amount)
+        {
+            byte r = (byte)((color.Red * amount) + backColor.Red * (1 - amount));
+            byte g = (byte)((color.Green * amount) + backColor.Green * (1 - amount));
+            byte b = (byte)((color.Blue * amount) + backColor.Blue * (1 - amount));
+            //byte a = (byte)((color.A * amount) + backColor.A * (1 - amount));
+            byte a = (byte)(255);
+            return Color.FromArgb(a, r, g, b).ToPixelColor();
+        }
         public static Vector ToVector(this SiblingDirection siblingDirection)
         {
             switch(siblingDirection)
