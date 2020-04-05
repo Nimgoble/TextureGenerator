@@ -11,5 +11,6 @@ namespace TextureGenerator.Algorithms
 	{
 		string AlgorithmName { get; }
 		PixelColor[,] DrawAlgorithm(IAlgorithmTarget target);
+		PixelColor[,] DrawAlgorithms(IAlgorithmTarget[] targets);
 	}
 }

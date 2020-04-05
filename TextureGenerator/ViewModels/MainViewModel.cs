@@ -168,12 +168,16 @@ namespace TextureGenerator.ViewModels
 		{
 			if (!this.CanRunAlgorithm)
 				return;
-			foreach (var target in this.SelectedAlgorithmTargets)
-			{
-				var result = this.selectedAlgorithm.DrawAlgorithm(target);
-				this.OutputImage.PutPixels(result, 0, 0);
-				UpdateModelMaterial();
-			}
+
+			var result = this.selectedAlgorithm.DrawAlgorithms(this.SelectedAlgorithmTargets.ToArray());
+			this.OutputImage.PutPixels(result, 0, 0);
+			UpdateModelMaterial();
+			//foreach (var target in this.SelectedAlgorithmTargets)
+			//{
+			//	var result = this.selectedAlgorithm.DrawAlgorithm(target);
+			//	this.OutputImage.PutPixels(result, 0, 0);
+			//	UpdateModelMaterial();
+			//}
 		}
 		public bool CanRunAlgorithm { get { return this.SelectedAlgorithm != null && this.SelectedAlgorithmTargets.Count > 0; } }
 		#endregion
