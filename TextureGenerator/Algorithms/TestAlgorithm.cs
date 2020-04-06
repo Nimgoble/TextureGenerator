@@ -33,9 +33,6 @@ namespace TextureGenerator.Algorithms
 			var shapeColor = System.Windows.Media.Colors.White.ToPixelColor();
 			var cutoffValue = new Random().Next(0, 100);
 			copy = this.DrawNoiseMap(target, copy, noiseMap, baseColor, shapeColor, cutoffValue);
-
-			//this.DrawRandomLine(target, copy, pixelsSource);
-			//this.GenerateNoiseMapStuff(target, copy);
 			return copy;
 		}
 		public PixelColor[,] DrawAlgorithms(IAlgorithmTarget[] targets)
@@ -54,11 +51,6 @@ namespace TextureGenerator.Algorithms
 			}
 			return copy;
 		}
-
-		//private PixelColor[,] Draw(IAlgorithmTarget target, PixelColor[,] source)
-		//{
-
-		//}
 		private PixelColor[,] DrawRandomLine(IAlgorithmTarget target, PixelColor[,] source, IPixelsSource pixelsSource)
 		{
 			var random = new Random();
@@ -102,19 +94,22 @@ namespace TextureGenerator.Algorithms
 			//var module = new LibNoise.Primitive.ImprovedPerlin();
 			module.Quality = NoiseQuality.Best;
 			//module.Seed = PrimitiveModule.DefaultSeed;
-			module.Seed = 10;
+			var random = new Random();
+			module.Seed = random.Next();
 
 			//ScaleBias scale = null;
 
 			FilterModule fModule = new Pipe();
 			fModule.Primitive3D = (IModule3D)module;
-			fModule.OctaveCount = 1;// FilterModule.DEFAULT_OCTAVE_COUNT;
-									//fModule.Frequency = FilterModule.DEFAULT_FREQUENCY;
-									//fModule.Gain = FilterModule.DEFAULT_GAIN;
-									//fModule.Lacunarity = FilterModule.DEFAULT_LACUNARITY;
-									//fModule.Offset = FilterModule.DEFAULT_OFFSET;
-									//fModule.SpectralExponent = FilterModule.DEFAULT_SPECTRAL_EXPONENT;
-			fModule.Frequency = 2;
+			fModule.OctaveCount = random.Next(1, 6);
+			// 1;
+			// FilterModule.DEFAULT_OCTAVE_COUNT;
+			//fModule.Frequency = FilterModule.DEFAULT_FREQUENCY;
+			//fModule.Gain = FilterModule.DEFAULT_GAIN;
+			//fModule.Lacunarity = FilterModule.DEFAULT_LACUNARITY;
+			//fModule.Offset = FilterModule.DEFAULT_OFFSET;
+			//fModule.SpectralExponent = FilterModule.DEFAULT_SPECTRAL_EXPONENT;
+			fModule.Frequency = random.Next(1, 5);
 			fModule.Gain = 10;
 			fModule.Lacunarity = 10;
 			fModule.Offset = 10;
@@ -124,19 +119,13 @@ namespace TextureGenerator.Algorithms
 			heightMap.SetSize(width, height);
 			float bound = 2f;
 			//NoiseMapBuilderPlane heightMapBuilder = new NoiseMapBuilderPlane(bound, bound * 2, 0.0f, 100.0f, true);
-			NoiseMapBuilderPlane heightMapBuilder = new NoiseMapBuilderPlane(bound, bound * 2, bound, bound * 2, true);
+			bool seemless = random.Next(0, 1) == 1;
+			NoiseMapBuilderPlane heightMapBuilder = new NoiseMapBuilderPlane(bound, bound * 2, bound, bound * 2, seemless);
 			heightMapBuilder.SourceModule = (IModule3D)fModule;
 			heightMapBuilder.NoiseMap = heightMap;
 			heightMapBuilder.SetSize(width, height);
-			//heightMapBuilder.SetBounds(6.0f, 10.0f, 1.0f, 5.0f);
 			heightMapBuilder.Build();
 			return heightMap;
-			//NoiseMapBuilderPlane heightMapBuilder;
-			//heightMapBuilder.SetSourceModule(myModule);
-			//heightMapBuilder.SetDestNoiseMap(heightMap);
-			//heightMapBuilder.SetDestSize(256, 256);
-			//heightMapBuilder.SetBounds(6.0, 10.0, 1.0, 5.0);
-			//heightMapBuilder.Build();
 		}
 	}
 }
