@@ -71,6 +71,12 @@ namespace TextureGenerator.Algorithms
 
 		private PixelColor[,] DrawNoiseMap(IAlgorithmTarget target, PixelColor[,] source, NoiseMap noiseMap, PixelColor baseColor, PixelColor shapeColor, double cutoffValue)
 		{
+			var random = new Random();
+			float random1 = (float)random.NextDouble() * random.Next(-1, 1);
+			float random2 = (float)random.NextDouble() * random.Next(-1, 1);
+			float upperBounds = Math.Max(random1, random2);
+			float lowerBounds = Math.Min(random1, random2);
+			float boundsDistance = upperBounds - lowerBounds;
 			target.AlgorithmPixels.ForEach
 			(
 				pixel =>
@@ -78,7 +84,9 @@ namespace TextureGenerator.Algorithms
 					var position = pixel.Position;
 					int x = (int)position.X, y = (int)position.Y;
 					var value = noiseMap.GetValue(x, y);
-					var offsetValue = ((value * 100) + 100) / 200;
+					value = value.Clamp(lowerBounds, upperBounds);
+					var distanceFromLowerBounds = value - lowerBounds;
+					var offsetValue = (boundsDistance == 0.0f) ? 0.0f : distanceFromLowerBounds / boundsDistance;
 					//source[y, x] = ((value * 100) >= cutoffValue) ? shapeColor.Blend(baseColor, value) : baseColor;
 					source[y, x] = shapeColor.Blend(baseColor, offsetValue);
 				}
