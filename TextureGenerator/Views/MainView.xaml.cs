@@ -71,5 +71,16 @@ namespace TextureGenerator.Views
 				this.ViewModel?.SaveSourceTexture(fileName);
 			}
 		}
+
+		private void btnSaveOutputAsString_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new SaveFileDialog();
+			dialog.Filter = "Text files (*.txt) | *.txt";
+			if (dialog.ShowDialog() == true)
+			{
+				var fileName = dialog.FileName;
+				this.ViewModel?.SaveOutputAsString(fileName);
+			}
+		}
 	}
 }

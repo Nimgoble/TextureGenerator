@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-
+using Newtonsoft.Json;
 namespace TextureGenerator.Models
 {
     [StructLayout(LayoutKind.Explicit)]
     public struct PixelColor
     {
-        // 32 bit BGRA 
+        // 32 bit BGRA
+        [JsonIgnore]
         [FieldOffset(0)] public UInt32 ColorBGRA;
         // 8 bit components
         [FieldOffset(0)] public byte Blue;

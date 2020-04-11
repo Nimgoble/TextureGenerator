@@ -180,6 +180,21 @@ namespace TextureGenerator.ViewModels
 			//}
 		}
 		public bool CanRunAlgorithm { get { return this.SelectedAlgorithm != null && this.SelectedAlgorithmTargets.Count > 0; } }
+		public void SaveOutputAsString(string fileName)
+		{
+			if (string.IsNullOrEmpty(fileName) || this.outputImage == null)
+				return;
+			var bitmapSource = this.outputImage;
+			var width = bitmapSource.PixelWidth;
+			var height = bitmapSource.PixelHeight;
+			var stride = width * ((bitmapSource.Format.BitsPerPixel + 7) / 8);
+
+			var bitmapData = new byte[height * stride];
+
+			bitmapSource.CopyPixels(bitmapData, stride, 0);
+			File.WriteAllBytes(fileName, bitmapData);
+			//File.WriteAllText(fileName, Convert.ToBase64String(bitmapData));
+		}
 		#endregion
 
 		#region Private Methods

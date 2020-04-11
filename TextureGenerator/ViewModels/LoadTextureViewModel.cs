@@ -65,16 +65,7 @@ namespace TextureGenerator.ViewModels
 		public bool CanGenerateTextureForImage { get { return !string.IsNullOrEmpty(this.ImagePath); } }
 		private TextureProfile LoadTextureProfile(IPixelsSource pixelsSource)
 		{
-			TextureProfile textureProfile = JsonConvert.DeserializeObject<TextureProfile>(File.ReadAllText(this.TextureProfilePath));
-			textureProfile.Blobs.ForEach
-			(
-				blob =>
-				{
-					blob.PixelsSource = pixelsSource;
-					//blob.Pixels.ForEach(pixel => pixel.PixelColor = blob.BlobColor); //Doing this cut the file size down to 1/5 of the size.
-				}
-			);
-			return textureProfile;
+			return new TextureProfileReader().ReadTextureProfile(this.TextureProfilePath, pixelsSource);
 		}
 		private BitmapImage LoadImage()
 		{

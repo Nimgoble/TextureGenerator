@@ -67,6 +67,9 @@
     <Reference Include="LibNoise, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\LibNoise.0.2\lib\NET45\LibNoise.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json.Bson, Version=1.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.Bson.1.0.2\lib\net45\Newtonsoft.Json.Bson.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
@@ -126,6 +129,7 @@
     <Compile Include="Framework\ITaskContext.cs" />
     <Compile Include="Framework\PixelColorToHexStringConverter.cs" />
     <Compile Include="Framework\TextureProcessor.cs" />
+    <Compile Include="Framework\TextureProfileReader.cs" />
     <Compile Include="Framework\TextureProfileWriter.cs" />
     <Compile Include="Models\IPixelsSource.cs" />
     <Compile Include="Models\PixelBlobGroup.cs" />
