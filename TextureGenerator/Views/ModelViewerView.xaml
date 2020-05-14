@@ -15,21 +15,39 @@
 
 		<Button x:Name="bLoadModel" Grid.Row="0" Height="25" Width="125" Click="bLoadModel_Click">Load Model</Button>
 
-		<hx:Viewport3DX Grid.Row="1" Camera="{Binding Camera}" EffectsManager="{Binding EffectsManager}" ZoomExtentsWhenLoaded="True" >
-			<hx:Viewport3DX.InputBindings>
-				<KeyBinding Command="hx:ViewportCommands.ZoomExtents" Gesture="Control+E" />
-				<MouseBinding Command="hx:ViewportCommands.Rotate" Gesture="RightClick" />
-				<MouseBinding Command="hx:ViewportCommands.Zoom" Gesture="MiddleClick" />
-				<MouseBinding Command="hx:ViewportCommands.Pan" Gesture="LeftClick" />
-			</hx:Viewport3DX.InputBindings>
-			<hx:AmbientLight3D Color="{Binding AmbientLightColor}" />
-			<hx:DirectionalLight3D Direction="{Binding Camera.LookDirection}" Color="{Binding DirectionalLightColor}" />
-			<hx:MeshGeometryModel3D Geometry="{Binding LoadedMesh}" Material="{Binding TestMaterial}" />
-			<hx:Element3DPresenter Content="{Binding GroupModel}" />
-			<hx:LineGeometryModel3D
+		<Grid Grid.Row="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="100" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<ListView 
+				Grid.Column="0"
+				ItemsSource="{Binding Triangles}"
+				SelectedItem="{Binding SelectedTriangle}"
+			>
+				<ListView.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Name}" />
+					</DataTemplate>
+				</ListView.ItemTemplate>
+			</ListView>
+			<hx:Viewport3DX Grid.Column="1" Camera="{Binding Camera}" EffectsManager="{Binding EffectsManager}" ZoomExtentsWhenLoaded="True" >
+				<hx:Viewport3DX.InputBindings>
+					<KeyBinding Command="hx:ViewportCommands.ZoomExtents" Gesture="Control+E" />
+					<MouseBinding Command="hx:ViewportCommands.Rotate" Gesture="RightClick" />
+					<MouseBinding Command="hx:ViewportCommands.Zoom" Gesture="MiddleClick" />
+					<MouseBinding Command="hx:ViewportCommands.Pan" Gesture="LeftClick" />
+				</hx:Viewport3DX.InputBindings>
+				<hx:AmbientLight3D Color="{Binding AmbientLightColor}" />
+				<hx:DirectionalLight3D Direction="{Binding Camera.LookDirection}" Color="{Binding DirectionalLightColor}" />
+				<hx:MeshGeometryModel3D Geometry="{Binding LoadedMesh}" Material="{Binding TestMaterial}" />
+				<hx:Element3DPresenter Content="{Binding GroupModel}" />
+				<hx:LineGeometryModel3D
                 Geometry="{Binding Grid}"
                 Transform="{Binding GridTransform}"
                 Color="{Binding GridColor}" />
-		</hx:Viewport3DX>
+			</hx:Viewport3DX>
+		</Grid>
+		
 	</Grid>
 </UserControl>

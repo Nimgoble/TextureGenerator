@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,9 +19,23 @@ using HelixToolkit.Wpf.SharpDX;
 using HelixToolkit.Wpf.SharpDX.Assimp;
 using HelixToolkit.Wpf.SharpDX.Model;
 using HelixToolkit.Wpf.SharpDX.Model.Scene;
+using System.Net.Http.Headers;
 
 namespace TextureGenerator.ViewModels
 {
+	public class TriangleViewModel : Screen
+	{
+		private Geometry3D.Triangle model;
+		private int index;
+		public TriangleViewModel(Geometry3D.Triangle model, int index)
+		{
+			this.model = model;
+			this.index = index;
+		}
+		public Geometry3D.Triangle Model { get { return this.model; } }
+		public int Index { get { return this.index; } }
+		public string Name { get { return $"Triangle {index}"; } }
+	}
 	public class ModelViewerViewModel : Screen, IDisposable
 	{
 		private readonly IEffectsManager effectsManager;
@@ -47,6 +62,7 @@ namespace TextureGenerator.ViewModels
 			Grid = LineBuilder.GenerateGrid(new Vector3(0, 1, 0), -5, 5, -5, 5);
 			GridColor = Colors.Black;
 			GridTransform = new Media3D.TranslateTransform3D(0, -3, 0);
+			this.Triangles = new ObservableCollection<TriangleViewModel>();
 		}
 		~ModelViewerViewModel()
 		{
@@ -90,8 +106,39 @@ namespace TextureGenerator.ViewModels
 				if (node is MaterialGeometryNode m)
 				{
 					m.Material = this.TestMaterial;
+					if(node is BoneSkinMeshNode bsmn)
+					{
+						if(bsmn.Geometry is BoneSkinnedMeshGeometry3D geo3D)
+						{
+							this.Triangles.Clear();
+							for(int i = 0; i < geo3D.Triangles.Count(); ++i)
+							{
+								var triangle = geo3D.Triangles.ElementAt(i);
+								this.Triangles.Add(new TriangleViewModel(triangle, i));
+							}
+						}
+					}
 				}
 			}
+		}
+		private void SetSelectionTriangle(TriangleViewModel triangle)
+		{
+			if(this.selectedTriangleMeshNode != null)
+			{
+				this.GroupModel.RemoveNode(this.selectedTriangleMeshNode);
+				this.selectedTriangleMeshNode = null;
+			}
+			if (triangle == null)
+				return;
+			var b1 = new MeshBuilder();
+			b1.AddTriangle(triangle.Model.P0, triangle.Model.P1, triangle.Model.P2);
+			var triangleMeshGeometry = b1.ToMeshGeometry3D();
+			this.selectedTriangleMeshNode = new MeshNode()
+			{
+				Geometry = triangleMeshGeometry,
+				Material = PhongMaterials.Green
+			};
+			this.GroupModel.AddNode(this.selectedTriangleMeshNode);
 		}
 		#endregion
 
@@ -115,6 +162,19 @@ namespace TextureGenerator.ViewModels
 		public Color GridColor { get; private set; }
 		public Color AmbientLightColor { get; private set; }
 		public Color DirectionalLightColor { get; private set; }
+		private MeshNode selectedTriangleMeshNode = null;
+		public ObservableCollection<TriangleViewModel> Triangles { get; set; }
+		private TriangleViewModel selectedTriangle = null;
+		public TriangleViewModel SelectedTriangle
+		{
+			get { return this.selectedTriangle; }
+			set
+			{
+				this.selectedTriangle = value;
+				this.SetSelectionTriangle(this.selectedTriangle);
+				NotifyOfPropertyChange(() => SelectedTriangle);
+			}
+		}
 		#endregion
 	}
 }
