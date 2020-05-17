@@ -157,5 +157,9 @@ namespace TextureGenerator.Framework
             else if (val.CompareTo(max) > 0) return max;
             else return val;
         }
+        public static Point UVToXY(this SharpDX.Vector2 uv, int sourceWidth, int sourceHeight)
+        {
+            return new Point(uv.X * sourceWidth, uv.Y * sourceHeight);
+        }
     }
 }

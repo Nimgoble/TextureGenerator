@@ -143,6 +143,7 @@
     <Compile Include="ViewModels\PixelBlobViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="ViewModels\TextureViewModel.cs" />
+    <Compile Include="ViewModels\TriangleViewModel.cs" />
     <Compile Include="Views\DialogView.xaml.cs">
       <DependentUpon>DialogView.xaml</DependentUpon>
     </Compile>

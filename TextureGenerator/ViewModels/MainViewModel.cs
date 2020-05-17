@@ -28,9 +28,18 @@ namespace TextureGenerator.ViewModels
 			this.windowManager = windowManager;
 			this.effectsManager = effectsManager;
 			this.modelViewerViewModel = new ModelViewerViewModel(windowManager, effectsManager);
+			this.modelViewerViewModel.TriangleSelection += ModelViewerViewModel_TriangleSelection;
 			this.DoReplacementAdditive = true;
 			this.SelectedAlgorithmTargets = new ObservableCollection<IAlgorithmTarget>();
 			this.algorithms.Add(new TestAlgorithm());
+		}
+
+		private void ModelViewerViewModel_TriangleSelection(object sender, TriangleSelectionEventArgs e)
+		{
+			if (this.SourceTexture == null)
+				return;
+
+			this.DrawTriangleOnImage(e.ViewModel, this.SourceTexture?.Model.Source);
 		}
 
 		#region Public Methods
@@ -237,6 +246,31 @@ namespace TextureGenerator.ViewModels
 					var pen = new Pen(brush, 5);
 					var size = new Size(1, 1);
 					blob.Border.ForEach(pixel => dc.DrawRectangle(brush, pen, new Rect(pixel.Position, size)));
+				}
+			}
+			RenderTargetBitmap rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);
+			rtb.Render(dv);
+			this.SourceImageFacade = this.CopyImageToWriteableBitmap(rtb);
+		}
+		private void DrawTriangleOnImage(TriangleViewModel triangleViewModel, BitmapSource image)
+		{
+			if (image == null)
+				return;
+			DrawingVisual dv = new DrawingVisual();
+			var src = image;
+			using (DrawingContext dc = dv.RenderOpen())
+			{
+				dc.DrawImage(src, new Rect(0, 0, src.PixelWidth, src.PixelHeight));
+				if (triangleViewModel != null)
+				{
+					var brush = new SolidColorBrush(Colors.White);
+					var pen = new Pen(brush, 5);
+					var size = new Size(1, 1);
+					var points = triangleViewModel.TextureCoordinates.Select(x => x.UVToXY(src.PixelWidth, src.PixelHeight)).ToList();
+					dc.DrawLine(pen, points[0], points[1]);
+					dc.DrawLine(pen, points[1], points[2]);
+					dc.DrawLine(pen, points[2], points[0]);
+					//blob.Border.ForEach(pixel => dc.DrawRectangle(brush, pen, new Rect(pixel.Position, size)));
 				}
 			}
 			RenderTargetBitmap rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);

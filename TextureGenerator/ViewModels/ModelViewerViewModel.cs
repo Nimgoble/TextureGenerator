@@ -23,18 +23,9 @@ using System.Net.Http.Headers;
 
 namespace TextureGenerator.ViewModels
 {
-	public class TriangleViewModel : Screen
+	public class TriangleSelectionEventArgs : EventArgs
 	{
-		private Geometry3D.Triangle model;
-		private int index;
-		public TriangleViewModel(Geometry3D.Triangle model, int index)
-		{
-			this.model = model;
-			this.index = index;
-		}
-		public Geometry3D.Triangle Model { get { return this.model; } }
-		public int Index { get { return this.index; } }
-		public string Name { get { return $"Triangle {index}"; } }
+		public TriangleViewModel ViewModel { get; set; }
 	}
 	public class ModelViewerViewModel : Screen, IDisposable
 	{
@@ -42,6 +33,7 @@ namespace TextureGenerator.ViewModels
 		private readonly IWindowManager windowManager;
 		private Camera camera = new PerspectiveCamera();
 		private SceneNode sceneNode = null;
+		private BoneSkinnedMeshGeometry3D bsmg = null;
 
 		public ModelViewerViewModel(IWindowManager windowManager, IEffectsManager effectsManager)
 		{
@@ -73,6 +65,13 @@ namespace TextureGenerator.ViewModels
 			effectsManager.Dispose();
 		}
 
+		public delegate void TriangleSelectionEventHandler(object sender, TriangleSelectionEventArgs e);
+		public event TriangleSelectionEventHandler TriangleSelection;
+		protected void OnTriangleSelection(TriangleViewModel viewModel)
+		{
+			this.TriangleSelection?.Invoke(this, new TriangleSelectionEventArgs() { ViewModel = viewModel });
+		}
+
 		#region Methods
 		public void LoadModel(string fileName)
 		{
@@ -101,6 +100,7 @@ namespace TextureGenerator.ViewModels
 		{
 			if (this.sceneNode == null || this.TestMaterial == null)
 				return;
+			this.bsmg = null;
 			foreach (var node in this.sceneNode.Traverse())
 			{
 				if (node is MaterialGeometryNode m)
@@ -110,11 +110,25 @@ namespace TextureGenerator.ViewModels
 					{
 						if(bsmn.Geometry is BoneSkinnedMeshGeometry3D geo3D)
 						{
+							this.bsmg = geo3D;
 							this.Triangles.Clear();
 							for(int i = 0; i < geo3D.Triangles.Count(); ++i)
 							{
 								var triangle = geo3D.Triangles.ElementAt(i);
-								this.Triangles.Add(new TriangleViewModel(triangle, i));
+								var startIndex = 3 * i;
+								var textureCoordinatesIndices = new int[]
+								{
+									geo3D.TriangleIndices[startIndex],
+									geo3D.TriangleIndices[startIndex + 1],
+									geo3D.TriangleIndices[startIndex + 2]
+								};
+								List<SharpDX.Vector2> textureCoordinates = new List<SharpDX.Vector2>()
+								{
+									geo3D.TextureCoordinates[textureCoordinatesIndices[0]],
+									geo3D.TextureCoordinates[textureCoordinatesIndices[1]],
+									geo3D.TextureCoordinates[textureCoordinatesIndices[2]]
+								};
+								this.Triangles.Add(new TriangleViewModel(triangle, i, textureCoordinates));
 							}
 						}
 					}
@@ -172,6 +186,7 @@ namespace TextureGenerator.ViewModels
 			{
 				this.selectedTriangle = value;
 				this.SetSelectionTriangle(this.selectedTriangle);
+				this.OnTriangleSelection(this.selectedTriangle);
 				NotifyOfPropertyChange(() => SelectedTriangle);
 			}
 		}
